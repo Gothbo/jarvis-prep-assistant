@@ -31,14 +31,20 @@ def validate_file(filepath: Path, model_class) -> tuple[bool, str]:
             data = yaml.safe_load(f)
 
         if not data:
-            return False, f"{filepath.name}: empty file"
+            return False, f"{filepath.name} (line 1): empty file"
 
         model_class.model_validate(data)
         return True, ""
     except ValidationError as e:
-        return False, f"{filepath.name}: {e}"
+        # Extract first error's location info for concise output
+        first_err = e.errors()[0]
+        loc = " -> ".join(str(l) for l in first_err["loc"])
+        msg = first_err["msg"]
+        return False, f"{filepath.name}: {loc} - {msg} (total {len(e.errors())} errors)"
     except yaml.YAMLError as e:
-        return False, f"{filepath.name}: YAML parse error - {e}"
+        line = getattr(e, "problem_mark", None)
+        line_info = f" (line {line.line + 1})" if line else ""
+        return False, f"{filepath.name}{line_info}: YAML parse error - {e}"
     except Exception as e:
         return False, f"{filepath.name}: {type(e).__name__} - {e}"
 
@@ -97,6 +103,9 @@ def main() -> int:
             continue
 
         for filepath in sorted(subdir.glob("*.yaml")):
+            # Skip test/temporary files
+            if filepath.name.startswith("_"):
+                continue
             total += 1
             ok, msg = validate_file(filepath, model_class)
             if ok:
