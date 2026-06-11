@@ -7,8 +7,17 @@ manufacturing:
   - scada
   - plc
   - production line
-  - manufacturing
   - industrial
+  - 制造业
+  - 制造
+  - 工厂
+  - 产线
+  - 工控
+  - OT
+  - ICS
+  - SCADA
+  - PLC
+  - 工业
 
 finance:
   - finance
@@ -20,6 +29,14 @@ finance:
   - fintech
   - compliance
   - audit
+  - 金融
+  - 金融行业
+  - 银行
+  - 合规
+  - 审计
+  - 保险
+  - 投资
+  - 财务
 
 healthcare:
   - healthcare
@@ -30,6 +47,15 @@ healthcare:
   - pharmaceutical
   - biotech
   - patient
+  - 医疗
+  - 医疗行业
+  - 医院
+  - 健康
+  - 诊所
+  - 患者
+  - 病人
+  - 药企
+  - 生物科技
 
 technology:
   - technology
@@ -39,6 +65,12 @@ technology:
   - cloud
   - startup
   - internet
+  - 科技
+  - 技术
+  - 软件
+  - 互联网
+  - 云
+  - 创业
 
 government:
   - government
@@ -47,6 +79,10 @@ government:
   - city
   - state
   - federal
+  - 政府
+  - 公共部门
+  - 市政
+  - 政务
 
 education:
   - education
@@ -55,6 +91,11 @@ education:
   - college
   - campus
   - academic
+  - 教育
+  - 学校
+  - 大学
+  - 校园
+  - 学术
 
 retail:
   - retail
@@ -62,3 +103,7 @@ retail:
   - shopping
   - store
   - consumer
+  - 零售
+  - 电商
+  - 购物
+  - 消费
