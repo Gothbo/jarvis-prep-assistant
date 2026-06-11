@@ -1,40 +1,106 @@
 id: manufacturing_ransomware
 industry: manufacturing
 scenario: ransomware
+
 pain_points:
-  surface: "Production line systems locked by ransomware, OT/ICS/SCADA affected"
-  deep: "Lack of network segmentation between IT and OT, no offline backup strategy, aging PLC firmware"
+  surface: >
+    Production line systems have been locked by ransomware. The attack has affected
+    critical OT/ICS/SCADA infrastructure including HMI stations, engineering workstations,
+    and data historians. Operators cannot monitor or control production processes,
+    resulting in complete plant shutdown across multiple assembly lines.
+  deep: >
+    Root cause analysis reveals systemic vulnerabilities: there is no network segmentation
+    between IT and OT networks, allowing the ransomware to traverse from compromised
+    corporate email systems directly into the production control layer. Offline backup
+    strategies for PLC configurations and recipes are nonexistent or outdated. Multiple
+    PLCs are running on legacy firmware versions (some over 5 years old) that have known
+    vulnerabilities but cannot be patched without vendor support contracts. The organization
+    lacks a formal OT security monitoring capability and has no visibility into east-west
+    traffic within the production network.
+
 solution:
-  method: "Incident Response & Recovery"
-  product: "EDR + Network Segmentation + OT Security Platform"
+  method: "Incident Response & Recovery Framework"
+  product: "OT-specific EDR + Network Segmentation Solution + Industrial Security Platform"
   phases:
-    - "Immediate containment: isolate affected OT segments"
-    - "Assess scope: identify compromised PLCs and HMI stations"
-    - "Recover: restore from offline backups, patch firmware"
-    - "Harden: implement IT/OT segmentation, deploy OT-specific EDR"
+    - >
+      Immediate containment: isolate affected OT segments from IT network to prevent
+      further lateral movement. Implement emergency firewall rules between IT and OT
+      zones. Deploy temporary monitoring on key OT network choke points.
+    - >
+      Scope assessment: identify all compromised PLCs, HMI stations, and engineering
+      workstations. Determine which production lines are affected vs. still operational.
+      Verify integrity of safety instrumented systems (SIS) to confirm they remain
+      uncompromised and functional.
+    - >
+      Recovery execution: restore PLC configurations and recipes from offline backups
+      or vendor-default configurations where backups are unavailable. Patch critical
+      firmware vulnerabilities on recovered systems. Rebuild HMI stations from known-good
+      images. Validate restored systems through controlled restart procedures.
+    - >
+      Long-term hardening: implement proper IT/OT network segmentation with DMZ architecture.
+      Deploy OT-specific endpoint detection and response (EDR) with protocol-aware monitoring
+      for Modbus, DNP3, and OPC-UA. Establish offline backup rotation for all critical
+      configurations. Create vendor support contracts for firmware updates. Build continuous
+      OT security monitoring capability with anomaly detection.
+
 talking_points:
-  opening: "We've been tracking the recent wave of OT-targeted ransomware and understand the unique pressures your team is facing."
-  empathy: "Production downtime is not just an IT issue - every minute of stopped lines means real revenue loss and potential safety risks for your team."
-  anchoring: "Our approach has helped similar manufacturing clients recover in under 48 hours while building long-term resilience against these threats."
+  opening: >
+    We've been closely tracking the recent wave of OT-targeted ransomware campaigns,
+    including the evolution from opportunistic IT attacks to deliberate production disruption.
+    We understand the unique pressures your operations team is facing right now — this is
+    not a standard IT incident, and it shouldn't be treated like one.
+  empathy: >
+    Production downtime in manufacturing is not just an IT issue — every minute of stopped
+    lines translates directly to revenue loss, customer delivery delays, and potential safety
+    concerns for your floor team. We've seen cases where organizations lost $1M+ per day during
+    OT outages. Your operations team has been keeping these systems running for years, and we
+    respect that expertise. We're here to support them, not replace their judgment.
+  anchoring: >
+    Our approach has helped similar manufacturing clients recover production operations in
+    under 48 hours while simultaneously building long-term resilience against these evolving
+    threats. We combine OT-specific incident response expertise with a structured hardening
+    framework that prevents recurrence without disrupting normal operations. The key insight
+    from our experience: recovery speed and future resilience are not trade-offs — they're
+    the same investment.
+
 sensitivity:
-  - "Production uptime is the #1 KPI - never suggest solutions that risk additional downtime"
-  - "OT engineers and IT teams often have friction - respect both perspectives"
-  - "Safety systems (SIS) are off-limits for testing without explicit approval"
+  - "Production uptime is the #1 KPI for the plant manager — never suggest solutions that risk additional downtime, even for testing purposes"
+  - "OT engineers and IT teams often have organizational friction and different priorities — respect both perspectives and bridge the gap rather than favoring one side"
+  - "Safety instrumented systems (SIS) are absolutely off-limits for any security testing or modification without explicit written approval from the safety officer"
+  - "Supply chain commitments and customer delivery schedules create time pressure — acknowledge this and factor it into recovery timeline estimates"
+
 follow_up_questions:
   - dimension: environment
-    question: "What PLC/HMI vendors are in your environment (Siemens, Rockwell, Schneider)?"
+    question: "What PLC and HMI vendors are deployed in your environment (Siemens, Rockwell, Schneider, ABB, Mitsubishi)?"
   - dimension: environment
-    question: "Is your OT network segmented from the corporate IT network?"
+    question: "Is your OT network currently segmented from the corporate IT network, or do they share infrastructure?"
+  - dimension: environment
+    question: "How many production lines or manufacturing cells are in the affected facility, and are other sites also impacted?"
   - dimension: time
-    question: "When was the ransomware first detected, and has it spread to other facilities?"
+    question: "When was the ransomware first detected, and has it spread to other facilities or production zones?"
   - dimension: time
-    question: "Is there a production deadline or seasonal peak that makes recovery urgent?"
+    question: "Is there a production deadline, customer commitment, or seasonal peak (e.g. holiday manufacturing rush) that makes recovery timeline particularly urgent?"
+  - dimension: time
+    question: "How long can the current shutdown continue before it triggers contractual penalties or customer escalations?"
   - dimension: asset
-    question: "Which production lines or products generate the most revenue?"
+    question: "Which production lines or product categories generate the highest revenue and should be prioritized for recovery?"
   - dimension: asset
-    question: "Do you have offline backups of your PLC configurations and recipes?"
+    question: "Do you have offline backups of PLC configurations, HMI projects, and manufacturing recipes — and have they been tested for restore validity?"
+  - dimension: asset
+    question: "Are there legacy systems or embedded devices that cannot be patched or upgraded without hardware replacement?"
   - dimension: budget
-    question: "Has your board allocated emergency budget for incident response?"
+    question: "Has the executive board or plant leadership allocated emergency budget for incident response and recovery?"
   - dimension: budget
-    question: "Is there an existing cybersecurity insurance policy that covers this?"
-reference_event: "Colonial Pipeline ransomware attack (2021) - DarkSide group targeted pipeline operations causing fuel supply disruption across US East Coast"
+    question: "Is there an existing cybersecurity insurance policy that covers OT/production incidents, and what does it require for claim activation?"
+
+reference_event: >
+  Colonial Pipeline ransomware attack (May 2021) — DarkSide ransomware group compromised
+  the pipeline's IT network through a stolen VPN credential, then pivoted into OT systems.
+  The company shut down all 5,500 miles of pipeline as a precautionary measure, causing
+  fuel supply disruptions across the US East Coast for 6 days. The attack resulted in
+  approximately $4.4M ransom payment (though DOJ later recovered ~$2.3M), estimated
+  broader economic impact of $1B+, and triggered the first-ever TSA cybersecurity
+  directive for pipeline operators. Key lesson: the ransomware did not directly infect
+  OT systems, but the organizational response (shutting down pipeline as precaution)
+  caused the real operational impact — highlighting the importance of IT/OT segmentation
+  and incident response plans that account for production continuity.
