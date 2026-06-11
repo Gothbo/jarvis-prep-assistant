@@ -1,0 +1,40 @@
+id: finance_compliance
+industry: finance
+scenario: compliance
+pain_points:
+  surface: "Upcoming regulatory compliance audit, need to demonstrate security posture"
+  deep: "Fragmented security tools across departments, lack of unified compliance framework, manual evidence collection"
+solution:
+  method: "Compliance Gap Analysis"
+  product: "SIEM + GRC Platform + DLP"
+  phases:
+    - "Assess: map current controls against regulatory requirements"
+    - "Gap analysis: identify missing controls and evidence gaps"
+    - "Remediate: deploy unified monitoring and automated evidence collection"
+    - "Continuous: establish ongoing compliance monitoring dashboard"
+talking_points:
+  opening: "With regulatory scrutiny intensifying across the financial sector, we help institutions turn compliance from a quarterly scramble into continuous confidence."
+  empathy: "We understand that compliance teams are stretched thin - manual evidence collection and spreadsheet tracking just doesn't scale with growing regulations."
+  anchoring: "Our clients typically reduce audit preparation time by 60% while improving their control coverage from 70% to 95%."
+sensitivity:
+  - "Never imply they are currently non-compliant - frame as 'strengthening posture'"
+  - "Regulatory fines are sensitive - reference industry averages, not specific penalties"
+  - "Customer data privacy is paramount - emphasize data handling capabilities"
+follow_up_questions:
+  - dimension: environment
+    question: "Which regulations are in scope (SOX, PCI-DSS, Basel III, local regulations)?"
+  - dimension: environment
+    question: "What security tools are currently deployed across your infrastructure?"
+  - dimension: time
+    question: "When is the next audit scheduled, and what scope will it cover?"
+  - dimension: time
+    question: "How long does your current evidence collection process take per audit?"
+  - dimension: asset
+    question: "What types of customer data are processed (PII, financial records, transaction data)?"
+  - dimension: asset
+    question: "How many systems and applications are in scope for compliance?"
+  - dimension: budget
+    question: "Is compliance tooling budgeted under IT or under the compliance department?"
+  - dimension: budget
+    question: "Have previous audit findings resulted in remediation budget allocations?"
+reference_event: "Equifax data breach (2017) - failure to patch known vulnerability led to exposure of 147M consumer records and $700M settlement"

@@ -1,0 +1,42 @@
+id: challenger_sale
+name: "Challenger Sale"
+description: "Teach-Tailor-Take Control - lead with insights and challenge the customer's thinking"
+applicable_scenarios:
+  - ransomware
+  - compliance
+  - apt
+steps:
+  - order: 1
+    title: "Warmer"
+    description: "Establish credibility with industry insights"
+    key_actions:
+      - "Share relevant threat intelligence or industry trends"
+      - "Demonstrate understanding of their specific challenges"
+  - order: 2
+    title: "Reframe"
+    description: "Introduce a new perspective on their problem"
+    key_actions:
+      - "Challenge their current assumptions"
+      - "Connect the problem to a bigger business issue"
+  - order: 3
+    title: "Rational Drowning"
+    description: "Present data that highlights the cost of inaction"
+    key_actions:
+      - "Share industry breach statistics and costs"
+      - "Quantify their specific risk exposure"
+  - order: 4
+    title: "Emotional Impact"
+    description: "Make the risk personal and urgent"
+    key_actions:
+      - "Share relevant case studies with real consequences"
+      - "Connect to their personal responsibility"
+  - order: 5
+    title: "New Way"
+    description: "Present your unique solution approach"
+    key_actions:
+      - "Outline the criteria for a good solution"
+      - "Position your approach as the only one meeting all criteria"
+industry_match:
+  - manufacturing
+  - finance
+  - healthcare

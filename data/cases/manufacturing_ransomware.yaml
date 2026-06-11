@@ -1,0 +1,40 @@
+id: manufacturing_ransomware
+industry: manufacturing
+scenario: ransomware
+pain_points:
+  surface: "Production line systems locked by ransomware, OT/ICS/SCADA affected"
+  deep: "Lack of network segmentation between IT and OT, no offline backup strategy, aging PLC firmware"
+solution:
+  method: "Incident Response & Recovery"
+  product: "EDR + Network Segmentation + OT Security Platform"
+  phases:
+    - "Immediate containment: isolate affected OT segments"
+    - "Assess scope: identify compromised PLCs and HMI stations"
+    - "Recover: restore from offline backups, patch firmware"
+    - "Harden: implement IT/OT segmentation, deploy OT-specific EDR"
+talking_points:
+  opening: "We've been tracking the recent wave of OT-targeted ransomware and understand the unique pressures your team is facing."
+  empathy: "Production downtime is not just an IT issue - every minute of stopped lines means real revenue loss and potential safety risks for your team."
+  anchoring: "Our approach has helped similar manufacturing clients recover in under 48 hours while building long-term resilience against these threats."
+sensitivity:
+  - "Production uptime is the #1 KPI - never suggest solutions that risk additional downtime"
+  - "OT engineers and IT teams often have friction - respect both perspectives"
+  - "Safety systems (SIS) are off-limits for testing without explicit approval"
+follow_up_questions:
+  - dimension: environment
+    question: "What PLC/HMI vendors are in your environment (Siemens, Rockwell, Schneider)?"
+  - dimension: environment
+    question: "Is your OT network segmented from the corporate IT network?"
+  - dimension: time
+    question: "When was the ransomware first detected, and has it spread to other facilities?"
+  - dimension: time
+    question: "Is there a production deadline or seasonal peak that makes recovery urgent?"
+  - dimension: asset
+    question: "Which production lines or products generate the most revenue?"
+  - dimension: asset
+    question: "Do you have offline backups of your PLC configurations and recipes?"
+  - dimension: budget
+    question: "Has your board allocated emergency budget for incident response?"
+  - dimension: budget
+    question: "Is there an existing cybersecurity insurance policy that covers this?"
+reference_event: "Colonial Pipeline ransomware attack (2021) - DarkSide group targeted pipeline operations causing fuel supply disruption across US East Coast"

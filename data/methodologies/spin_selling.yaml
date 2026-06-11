@@ -1,0 +1,38 @@
+id: spin_selling
+name: "SPIN Selling"
+description: "Situation-Problem-Implication-Need Payoff - a consultative selling methodology focused on asking the right questions"
+applicable_scenarios:
+  - ransomware
+  - data_leak
+  - compliance
+  - apt
+  - phishing
+steps:
+  - order: 1
+    title: "Situation"
+    description: "Understand the client's current environment and context"
+    key_actions:
+      - "Ask about current infrastructure and security posture"
+      - "Understand organizational structure and decision makers"
+  - order: 2
+    title: "Problem"
+    description: "Uncover the client's explicit and implicit problems"
+    key_actions:
+      - "Identify pain points the client is aware of"
+      - "Probe for problems they haven't considered"
+  - order: 3
+    title: "Implication"
+    description: "Explore the consequences of not solving the problems"
+    key_actions:
+      - "Quantify the business impact of current problems"
+      - "Connect technical issues to business outcomes"
+  - order: 4
+    title: "Need Payoff"
+    description: "Guide the client to articulate the value of a solution"
+    key_actions:
+      - "Let the client describe their ideal outcome"
+      - "Position your solution as the bridge to that outcome"
+industry_match:
+  - manufacturing
+  - finance
+  - healthcare

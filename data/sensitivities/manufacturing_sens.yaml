@@ -1,0 +1,16 @@
+id: manufacturing_sens
+industry: manufacturing
+primary_sensitivity: "Production uptime and output - every minute of downtime has a direct revenue impact"
+secondary_sensitivities:
+  - "OT/IT team dynamics - often separate budgets and priorities"
+  - "Safety system integrity - SIS must never be compromised"
+  - "Supply chain dependencies - security must consider upstream/downstream partners"
+landmines:
+  - "Never suggest shutting down production for security testing without explicit executive approval"
+  - "Don't blame the OT team for legacy security gaps"
+  - "Avoid comparing IT security practices to OT - they have fundamentally different priorities"
+  - "Don't reference specific competitors by name"
+empathy_phrases:
+  - "We understand that in manufacturing, uptime is everything"
+  - "Your OT team has kept these systems running for years - we respect that expertise"
+  - "Safety and production come first - our security solutions work around your operations"

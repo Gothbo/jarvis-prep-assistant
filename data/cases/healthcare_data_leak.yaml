@@ -1,0 +1,40 @@
+id: healthcare_data_leak
+industry: healthcare
+scenario: data_leak
+pain_points:
+  surface: "Patient data breach concern, potential HIPAA/regulatory violations"
+  deep: "Legacy systems with known vulnerabilities, excessive access privileges, unencrypted data at rest and in transit"
+solution:
+  method: "Data-Centric Security"
+  product: "DLP + Encryption + Zero Trust Access + SIEM"
+  phases:
+    - "Discover: classify patient data across all systems and endpoints"
+    - "Protect: implement encryption, DLP policies, and least-privilege access"
+    - "Monitor: deploy behavioral analytics for anomalous data access"
+    - "Respond: establish incident response playbooks for data breach scenarios"
+talking_points:
+  opening: "Healthcare is the most targeted industry for data breaches, and we specialize in protecting patient data while maintaining clinical workflow efficiency."
+  empathy: "We know that in healthcare, every second matters - security measures can't slow down patient care. That's why our solutions work transparently in the background."
+  anchoring: "Our healthcare clients have reduced data breach incidents by 80% while maintaining full HIPAA compliance and zero impact on clinical workflows."
+sensitivity:
+  - "Patient safety is always the top priority - security must never interfere with care delivery"
+  - "HIPAA violations carry personal liability for executives - be factual, not alarmist"
+  - "Medical staff are overworked - solutions must be low-friction and well-integrated"
+follow_up_questions:
+  - dimension: environment
+    question: "What EHR/EMR systems are in use (Epic, Cerner, Meditech)?"
+  - dimension: environment
+    question: "Do you have medical IoT devices connected to the network?"
+  - dimension: time
+    question: "Have there been any recent security incidents or near-misses?"
+  - dimension: time
+    question: "When was the last HIPAA risk assessment conducted?"
+  - dimension: asset
+    question: "How many patient records are in your system, and across how many facilities?"
+  - dimension: asset
+    question: "Are there any legacy systems that handle patient data but can't be updated?"
+  - dimension: budget
+    question: "Is cybersecurity budget allocated separately or part of general IT spend?"
+  - dimension: budget
+    question: "Have you experienced any regulatory fines or settlements related to data breaches?"
+reference_event: "Anthem data breach (2015) - state-sponsored attack compromised 78.8M patient records through spear-phishing of HR department"

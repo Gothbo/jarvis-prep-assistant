@@ -1,0 +1,66 @@
+"""Industry keyword mapping for intent recognition."""
+
+manufacturing:
+  - manufacturing
+  - factory
+  - production
+  - ot
+  - ics
+  - scada
+  - plc
+  - production line
+  - manufacturing
+  - industrial
+
+finance:
+  - finance
+  - financial
+  - banking
+  - bank
+  - investment
+  - insurance
+  - fintech
+  - compliance
+  - audit
+
+healthcare:
+  - healthcare
+  - hospital
+  - medical
+  - health
+  - clinic
+  - pharmaceutical
+  - biotech
+  - patient
+
+technology:
+  - technology
+  - tech
+  - software
+  - saas
+  - cloud
+  - startup
+  - internet
+
+government:
+  - government
+  - public sector
+  - municipal
+  - city
+  - state
+  - federal
+
+education:
+  - education
+  - school
+  - university
+  - college
+  - campus
+  - academic
+
+retail:
+  - retail
+  - ecommerce
+  - shopping
+  - store
+  - consumer

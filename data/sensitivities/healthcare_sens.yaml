@@ -1,0 +1,16 @@
+id: healthcare_sens
+industry: healthcare
+primary_sensitivity: "Patient safety and care continuity - security measures must never interfere with patient care"
+secondary_sensitivities:
+  - "HIPAA/regulatory compliance with personal liability for executives"
+  - "Medical staff workload - already overburdened, security adds friction"
+  - "Legacy medical devices - many cannot be patched or replaced easily"
+landmines:
+  - "Never suggest security measures that could delay patient care"
+  - "Don't imply that clinical staff are security risks due to convenience shortcuts"
+  - "Avoid FUD about regulatory penalties - focus on patient outcomes"
+  - "Don't recommend replacing medical devices solely for security reasons"
+empathy_phrases:
+  - "In healthcare, every decision ultimately impacts patient outcomes - we never forget that"
+  - "Your clinical teams are heroes working under immense pressure - our tools should make their lives easier, not harder"
+  - "We understand that medical devices have lifecycles that don't align with typical IT refresh cycles"

@@ -1,0 +1,16 @@
+id: finance_sens
+industry: finance
+primary_sensitivity: "Regulatory compliance and customer trust - breaches erode both simultaneously"
+secondary_sensitivities:
+  - "Executive liability - C-suite faces personal risk from compliance failures"
+  - "Third-party risk - vendor and supply chain security gaps"
+  - "Transaction system integrity - any disruption to trading/payment systems is unacceptable"
+landmines:
+  - "Never imply current non-compliance - always frame as strengthening posture"
+  - "Don't discuss specific regulatory fines unless they are public knowledge"
+  - "Avoid suggesting that their current security team is inadequate"
+  - "Don't reference customer data breaches at their competitors"
+empathy_phrases:
+  - "The regulatory landscape is evolving faster than any team can keep up with alone"
+  - "We know your security team is managing an enormous surface area with finite resources"
+  - "Customer trust takes years to build and seconds to lose - we help protect both"
