@@ -93,3 +93,53 @@ class TestPrepPackage:
         }
         pkg = PrepPackage.model_validate(data)
         assert len(pkg.sensitivity_alerts) >= 3
+
+
+class TestAC3_ImportAll:
+    """AC3: from jarvis.models import * should have no import errors."""
+
+    def test_import_all_no_errors(self):
+        from jarvis.models import Case, Methodology, SensitivityProfile, Product, PrepPackage
+        assert Case is not None
+        assert Methodology is not None
+        assert SensitivityProfile is not None
+        assert Product is not None
+        assert PrepPackage is not None
+
+    def test_all_four_model_types_available(self):
+        import jarvis.models
+        names = jarvis.models.__all__
+        assert "Case" in names
+        assert "Methodology" in names
+        assert "SensitivityProfile" in names
+        assert "Product" in names
+        assert "PrepPackage" in names
+
+
+class TestAC4_FieldAnnotationsAndDescriptions:
+    """AC4: Each field should have a type annotation and Field description."""
+
+    def test_case_fields_have_annotations_and_descriptions(self):
+        for name, field in Case.model_fields.items():
+            assert field.annotation is not None, f"Case.{name} missing type annotation"
+            assert field.description, f"Case.{name} missing Field description"
+
+    def test_methodology_fields_have_annotations_and_descriptions(self):
+        for name, field in Methodology.model_fields.items():
+            assert field.annotation is not None, f"Methodology.{name} missing type annotation"
+            assert field.description, f"Methodology.{name} missing Field description"
+
+    def test_sensitivity_fields_have_annotations_and_descriptions(self):
+        for name, field in SensitivityProfile.model_fields.items():
+            assert field.annotation is not None, f"SensitivityProfile.{name} missing type annotation"
+            assert field.description, f"SensitivityProfile.{name} missing Field description"
+
+    def test_product_fields_have_annotations_and_descriptions(self):
+        for name, field in Product.model_fields.items():
+            assert field.annotation is not None, f"Product.{name} missing type annotation"
+            assert field.description, f"Product.{name} missing Field description"
+
+    def test_prep_package_fields_have_annotations_and_descriptions(self):
+        for name, field in PrepPackage.model_fields.items():
+            assert field.annotation is not None, f"PrepPackage.{name} missing type annotation"
+            assert field.description, f"PrepPackage.{name} missing Field description"
