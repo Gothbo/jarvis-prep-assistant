@@ -3,10 +3,12 @@
 import json
 import logging
 import os
+import re
 from typing import Any
 
 import httpx
 from openai import OpenAI
+from pydantic import ValidationError
 
 from jarvis.engine.intent import IntentResult
 from jarvis.knowledge.loader import KnowledgeBase
@@ -24,6 +26,43 @@ class LLMUnavailableError(Exception):
     """Raised when the LLM API is unavailable."""
 
     pass
+
+
+def _clean_llm_json(raw: str) -> str:
+    """Strip markdown code fences and whitespace from LLM JSON output."""
+    text = raw.strip()
+    # Strip markdown code fences (```json ... ``` or ``` ... ```)
+    text = re.sub(r"^```(?:json)?\s*\n?", "", text)
+    text = re.sub(r"\n?```\s*$", "", text)
+    return text.strip()
+
+
+def _extract_json_object(raw: str) -> str | None:
+    """Try to extract a JSON object from malformed text by finding balanced braces."""
+    match = re.search(r"\{.*\}", raw, re.DOTALL)
+    return match.group(0) if match else None
+
+
+def _parse_partial_json(data: dict) -> PrepPackage:
+    """Parse a potentially incomplete LLM JSON response into a PrepPackage.
+
+    Fills in defaults for any missing required fields so that at least 4 of 6
+    modules can be recovered even when the LLM output is incomplete.
+    """
+    if not isinstance(data, dict):
+        data = {}
+
+    defaults: dict[str, Any] = {
+        "scenario_assessment": "Assessment unavailable - LLM returned partial response",
+        "sensitivity_alerts": ["No sensitivity alerts available"],
+        "matched_cases": [],
+        "follow_up_questions": [],
+        "solution_direction": "Solution direction unavailable - LLM returned partial response",
+        "talking_points": "Talking points unavailable - LLM returned partial response",
+    }
+
+    result = {**defaults, **data}
+    return PrepPackage.model_validate(result)
 
 
 def _build_prompt(intent: IntentResult, kb: KnowledgeBase) -> str:
@@ -118,8 +157,24 @@ def generate_prep(intent: IntentResult, kb: KnowledgeBase) -> PrepPackage:
         if not content:
             raise LLMUnavailableError("Empty response from LLM")
 
-        data: dict[str, Any] = json.loads(content)
-        return PrepPackage.model_validate(data)
+        # Clean markdown code fences if present
+        cleaned = _clean_llm_json(content)
+
+        try:
+            data: dict[str, Any] = json.loads(cleaned)
+        except json.JSONDecodeError:
+            # Try to extract JSON object from raw text
+            extracted = _extract_json_object(content)
+            if extracted:
+                data = json.loads(extracted)
+            else:
+                raise
+
+        try:
+            return PrepPackage.model_validate(data)
+        except ValidationError:
+            # Attempt partial recovery for incomplete but parseable JSON
+            return _parse_partial_json(data if isinstance(data, dict) else {})
 
     except httpx.TimeoutException:
         raise LLMUnavailableError("LLM API timed out")
