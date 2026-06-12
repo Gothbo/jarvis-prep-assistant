@@ -55,7 +55,7 @@ def semantic_search(
 
         search_results = []
         if results and results["ids"] and results["ids"][0]:
-            distances = results.get("distabilities", [[]])[0]
+            distances = results.get("distances", [[]])[0]
             # ChromaDB returns distances; convert to similarity scores
             for i, doc_id in enumerate(results["ids"][0]):
                 score = 1.0 - distances[i] if i < len(distances) else 0.0
