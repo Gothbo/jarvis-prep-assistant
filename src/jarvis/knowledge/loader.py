@@ -36,8 +36,9 @@ def _load_yaml_files(directory: Path) -> list[dict[str, Any]]:
     """Load all YAML files from a directory, skipping invalid ones."""
     results = []
     if not directory.exists():
-        logger.warning("Data directory not found: %s", directory)
-        return results
+        raise FileNotFoundError(
+            f"Knowledge data directory not found: {directory}"
+        )
 
     for filepath in sorted(directory.glob("*.yaml")):
         try:

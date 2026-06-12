@@ -1,0 +1,21 @@
+id: product_edr
+name: "JARVIS-EDR 终端检测与响应"
+category: "endpoint_security"
+description: >
+  面向企业终端的高级威胁检测与响应平台，集成行为分析、
+  文件沙箱和自动化响应能力，覆盖 Windows / macOS / Linux 三大平台。
+key_features:
+  - "实时行为监控与 IOA 检测"
+  - "内置轻量沙箱，可疑文件本地 detonate"
+  - "一键隔离 / 进程终止 / 文件删除等自动响应"
+  - "与 SIEM / SOAR 平台双向集成"
+  - "离线防护：断网状态下策略持续生效"
+applicable_industries:
+  - manufacturing
+  - finance
+  - healthcare
+applicable_scenarios:
+  - ransomware
+  - apt
+  - data_leak
+  - phishing
