@@ -8,7 +8,6 @@ AC4: Non-existent directory raises FileNotFoundError with path info
 
 import logging
 import pathlib
-import textwrap
 
 import pytest
 import yaml
@@ -24,8 +23,8 @@ from jarvis.knowledge.loader import (
 )
 from jarvis.models.case import Case
 from jarvis.models.methodology import Methodology
-from jarvis.models.sensitivity import SensitivityProfile
 from jarvis.models.product import Product
+from jarvis.models.sensitivity import SensitivityProfile
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent.parent / "data"
 

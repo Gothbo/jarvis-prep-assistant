@@ -2,9 +2,9 @@
 
 import logging
 
-from jarvis.models.prep_package import PrepPackage
-from jarvis.knowledge.loader import KnowledgeBase
 from jarvis.engine.intent import IntentResult
+from jarvis.knowledge.loader import KnowledgeBase
+from jarvis.models.prep_package import PrepPackage
 
 logger = logging.getLogger(__name__)
 

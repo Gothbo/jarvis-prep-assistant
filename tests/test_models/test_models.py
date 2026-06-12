@@ -3,11 +3,11 @@
 import pytest
 from pydantic import ValidationError
 
-from jarvis.models.case import Case, PainPoints, Solution, TalkingPoints, FollowUpQuestion
-from jarvis.models.methodology import Methodology, MethodologyStep
-from jarvis.models.sensitivity import SensitivityProfile
-from jarvis.models.product import Product
+from jarvis.models.case import Case
+from jarvis.models.methodology import Methodology
 from jarvis.models.prep_package import PrepPackage
+from jarvis.models.product import Product
+from jarvis.models.sensitivity import SensitivityProfile
 
 
 def _make_case(**overrides) -> dict:
@@ -99,7 +99,7 @@ class TestAC3_ImportAll:
     """AC3: from jarvis.models import * should have no import errors."""
 
     def test_import_all_no_errors(self):
-        from jarvis.models import Case, Methodology, SensitivityProfile, Product, PrepPackage
+        from jarvis.models import Case, Methodology, PrepPackage, Product, SensitivityProfile
         assert Case is not None
         assert Methodology is not None
         assert SensitivityProfile is not None

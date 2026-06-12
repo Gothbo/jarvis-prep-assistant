@@ -6,9 +6,8 @@ AC3: Input unrecognized text → industry=None, scenario=None
 AC4: Input "医疗+数据泄露" → industry=healthcare, scenario=data_leak
 """
 
-import pytest
 
-from jarvis.engine.intent import recognize, IntentResult, _load_keyword_map, _build_reverse_map
+from jarvis.engine.intent import IntentResult, _build_reverse_map, _load_keyword_map, recognize
 
 
 class TestAC1_ManufacturingRansomware:

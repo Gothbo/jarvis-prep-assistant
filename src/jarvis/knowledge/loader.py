@@ -8,8 +8,8 @@ import yaml
 
 from jarvis.models.case import Case
 from jarvis.models.methodology import Methodology
-from jarvis.models.sensitivity import SensitivityProfile
 from jarvis.models.product import Product
+from jarvis.models.sensitivity import SensitivityProfile
 
 logger = logging.getLogger(__name__)
 

@@ -6,8 +6,6 @@ import os
 import time
 from pathlib import Path
 
-import httpx
-
 from jarvis.models.prep_package import ThreatEvent
 
 logger = logging.getLogger(__name__)

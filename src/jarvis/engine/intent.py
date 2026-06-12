@@ -1,8 +1,8 @@
 """Intent and industry recognition from natural language input."""
 
 import logging
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
 
 import yaml
 

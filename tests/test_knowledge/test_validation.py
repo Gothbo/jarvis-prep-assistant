@@ -2,12 +2,9 @@
 
 import subprocess
 import sys
-import textwrap
-
-import pytest
-import yaml
-
 from pathlib import Path
+
+import yaml
 
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 SCRIPT_PATH = Path(__file__).resolve().parent.parent.parent / "scripts" / "validate_data.py"
@@ -38,10 +35,10 @@ class TestAC2_FormatErrorExitOne:
 
     def test_bad_yaml_syntax_returns_error(self):
         """YAML with syntax error → validate_file returns False with parse error."""
-        from scripts.validate_data import validate_file
-        from jarvis.models.case import Case
-
         import tempfile
+
+        from jarvis.models.case import Case
+        from scripts.validate_data import validate_file
         with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False, mode="w", encoding="utf-8") as f:
             f.write("id: test\nindustry: test\nscenario: [unclosed bracket\n")
             temp_path = Path(f.name)
@@ -66,7 +63,6 @@ class TestAC2_FormatErrorExitOne:
         )
         # Use validate_file directly
         sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
-        from jarvis.models.case import Case
         from scripts.validate_data import validate_file
 
         ok, msg = validate_file(bad_data, Case)
@@ -76,11 +72,11 @@ class TestAC2_FormatErrorExitOne:
 
     def test_yaml_parse_error_includes_line(self):
         """YAML parse error output includes line number info."""
-        from scripts.validate_data import validate_file
-        from jarvis.models.case import Case
-
         # Create a temp file with YAML syntax error
         import tempfile
+
+        from jarvis.models.case import Case
+        from scripts.validate_data import validate_file
         with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False, mode="w", encoding="utf-8") as f:
             f.write("id: test\nindustry: test\nscenario: [unclosed\n")
             temp_path = Path(f.name)
@@ -96,10 +92,10 @@ class TestAC2_FormatErrorExitOne:
 
     def test_pydantic_error_includes_field_location(self):
         """Pydantic ValidationError output includes field location (loc path)."""
-        from scripts.validate_data import validate_file
-        from jarvis.models.case import Case
-
         import tempfile
+
+        from jarvis.models.case import Case
+        from scripts.validate_data import validate_file
         with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False, mode="w", encoding="utf-8") as f:
             # Missing required 'id' field
             f.write(yaml.dump({"industry": "manufacturing", "scenario": "ransomware"}))
@@ -169,7 +165,6 @@ class TestAC4_EmptyKBWarning:
             (tmp_path / subdir).mkdir()
 
         # Mock the DATA_DIR by patching at runtime
-        import importlib
         import scripts.validate_data as vd_module
 
         original_data_dir = vd_module.DATA_DIR

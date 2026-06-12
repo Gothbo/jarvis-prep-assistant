@@ -2,7 +2,6 @@
 
 import pathlib
 
-import pytest
 import yaml
 
 from jarvis.models.methodology import Methodology
@@ -108,7 +107,8 @@ class TestAC3_ValidateDataScript:
     """AC3: validate_data.py outputs 'All X files passed validation' with exit code 0."""
 
     def test_validate_script_runs_successfully(self):
-        import subprocess, sys
+        import subprocess
+        import sys
         result = subprocess.run(
             [sys.executable, "scripts/validate_data.py"],
             capture_output=True,
