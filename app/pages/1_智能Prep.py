@@ -5,8 +5,9 @@ import os
 import streamlit as st
 
 # ---------------------------------------------------------------------------
-# Bridge Streamlit secrets → environment variables (for local dev)
-# On Streamlit Cloud, secrets are already available as env vars.
+# Bridge Streamlit secrets → environment variables
+# st.secrets provides access to secrets.toml values, but the LLM engine
+# reads from os.environ, so we must copy them over.
 # ---------------------------------------------------------------------------
 _SECRET_KEYS = [
     "LLM_API_KEY", "LLM_BASE_URL", "LLM_MODEL", "LLM_TIMEOUT",

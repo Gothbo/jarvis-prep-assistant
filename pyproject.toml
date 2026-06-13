@@ -19,14 +19,14 @@ dependencies = [
     "openai>=1.0",
     "jieba>=0.42",
     "httpx>=0.25",
-    "plotly>=5.18",
-    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+backend = [
     "fastapi>=0.104",
     "uvicorn>=0.24",
     "python-multipart>=0.0.6",
 ]
-
-[project.optional-dependencies]
 search = [
     "chromadb>=0.4",
 ]
@@ -35,6 +35,9 @@ dev = [
     "pytest-cov>=4.0",
     "ruff>=0.3",
     "chromadb>=0.4",
+    "fastapi>=0.104",
+    "uvicorn>=0.24",
+    "python-multipart>=0.0.6",
 ]
 
 [tool.setuptools.packages.find]
