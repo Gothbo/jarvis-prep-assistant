@@ -16,10 +16,15 @@ from jarvis.models.prep_package import PrepPackage
 
 logger = logging.getLogger(__name__)
 
-LLM_API_KEY = os.getenv("LLM_API_KEY", "")
-LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
-LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
-LLM_TIMEOUT = float(os.getenv("LLM_TIMEOUT", "8.0"))
+
+def _get_llm_config() -> dict[str, str]:
+    """Read LLM config from environment at call time (supports lazy init)."""
+    return {
+        "api_key": os.getenv("LLM_API_KEY", ""),
+        "base_url": os.getenv("LLM_BASE_URL", "https://api.openai.com/v1"),
+        "model": os.getenv("LLM_MODEL", "gpt-4o-mini"),
+        "timeout": float(os.getenv("LLM_TIMEOUT", "8.0")),
+    }
 
 
 class LLMUnavailableError(Exception):
@@ -134,20 +139,21 @@ def generate_prep(intent: IntentResult, kb: KnowledgeBase) -> PrepPackage:
 
     Raises LLMUnavailableError if the API is unavailable or times out.
     """
-    if not LLM_API_KEY:
+    cfg = _get_llm_config()
+    if not cfg["api_key"]:
         raise LLMUnavailableError("LLM_API_KEY not configured")
 
     prompt = _build_prompt(intent, kb)
 
     try:
         client = OpenAI(
-            api_key=LLM_API_KEY,
-            base_url=LLM_BASE_URL,
-            timeout=LLM_TIMEOUT,
+            api_key=cfg["api_key"],
+            base_url=cfg["base_url"],
+            timeout=cfg["timeout"],
         )
 
         response = client.chat.completions.create(
-            model=LLM_MODEL,
+            model=cfg["model"],
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
             temperature=0.7,

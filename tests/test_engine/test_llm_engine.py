@@ -285,7 +285,7 @@ class TestAC1_ManufacturingRansomwarePrepPackage:
     def test_returns_prep_package_instance(self, manufacturing_ransomware_intent,
                                          knowledge_base, valid_llm_json,
                                          monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         content = json.dumps(valid_llm_json)
         with _patch_openai(content):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
@@ -293,7 +293,7 @@ class TestAC1_ManufacturingRansomwarePrepPackage:
 
     def test_all_six_modules_present(self, manufacturing_ransomware_intent,
                                      knowledge_base, valid_llm_json, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         content = json.dumps(valid_llm_json)
         with _patch_openai(content):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
@@ -308,7 +308,7 @@ class TestAC1_ManufacturingRansomwarePrepPackage:
     def test_completes_within_10_seconds(self, manufacturing_ransomware_intent,
                                          knowledge_base, valid_llm_json,
                                          monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         content = json.dumps(valid_llm_json)
         with _patch_openai(content):
             start = time.time()
@@ -320,7 +320,7 @@ class TestAC1_ManufacturingRansomwarePrepPackage:
                                          knowledge_base, valid_llm_json,
                                          monkeypatch):
         """Verify the returned PrepPackage preserves data from the LLM response."""
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         content = json.dumps(valid_llm_json)
         with _patch_openai(content):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
@@ -337,7 +337,7 @@ class TestAC2_ScenarioAssessmentUrgency:
     @pytest.mark.parametrize("urgency", ["urgent", "high", "medium", "low"])
     def test_urgency_levels_present(self, manufacturing_ransomware_intent,
                                     knowledge_base, monkeypatch, urgency):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         fake_json = {
             "scenario_assessment": f"Urgency level: {urgency}. This requires attention.",
             "sensitivity_alerts": ["Alert 1", "Alert 2", "Alert 3"],
@@ -354,7 +354,7 @@ class TestAC2_ScenarioAssessmentUrgency:
     def test_scenario_assessment_non_empty(self, manufacturing_ransomware_intent,
                                            knowledge_base, valid_llm_json,
                                            monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         with _patch_openai(json.dumps(valid_llm_json)):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
@@ -368,7 +368,7 @@ class TestAC3_SensitivityAlerts:
 
     def test_at_least_3_alerts(self, manufacturing_ransomware_intent,
                                knowledge_base, valid_llm_json, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         with _patch_openai(json.dumps(valid_llm_json)):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
@@ -377,7 +377,7 @@ class TestAC3_SensitivityAlerts:
     def test_at_least_2_landmines_in_alerts(self, manufacturing_ransomware_intent,
                                             knowledge_base, valid_llm_json,
                                             monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         with _patch_openai(json.dumps(valid_llm_json)):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
@@ -386,7 +386,7 @@ class TestAC3_SensitivityAlerts:
 
     def test_sensitivity_alerts_is_list(self, manufacturing_ransomware_intent,
                                         knowledge_base, valid_llm_json, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         with _patch_openai(json.dumps(valid_llm_json)):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
@@ -400,7 +400,7 @@ class TestAC4_FollowUpQuestions:
 
     def test_question_count_in_range(self, manufacturing_ransomware_intent,
                                      knowledge_base, valid_llm_json, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         with _patch_openai(json.dumps(valid_llm_json)):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
@@ -410,7 +410,7 @@ class TestAC4_FollowUpQuestions:
     def test_boundary_counts(self, manufacturing_ransomware_intent,
                              knowledge_base, monkeypatch, count):
         """Test exact boundary values: 8, 10, and 12 are all valid."""
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         fake_json = {
             "scenario_assessment": "Urgency: high.",
             "sensitivity_alerts": ["A1", "A2", "A3"],
@@ -428,7 +428,7 @@ class TestAC4_FollowUpQuestions:
                                              knowledge_base, valid_llm_json,
                                              monkeypatch):
         """The valid_llm_json contains questions mentioning environment/time/asset/budget."""
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         with _patch_openai(json.dumps(valid_llm_json)):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
@@ -461,7 +461,7 @@ class TestAC5_TalkingPoints:
 
     def test_contains_opening(self, manufacturing_ransomware_intent,
                               knowledge_base, valid_llm_json, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         with _patch_openai(json.dumps(valid_llm_json)):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
@@ -469,7 +469,7 @@ class TestAC5_TalkingPoints:
 
     def test_contains_empathy(self, manufacturing_ransomware_intent,
                               knowledge_base, valid_llm_json, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         with _patch_openai(json.dumps(valid_llm_json)):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
@@ -477,7 +477,7 @@ class TestAC5_TalkingPoints:
 
     def test_contains_anchoring(self, manufacturing_ransomware_intent,
                                 knowledge_base, valid_llm_json, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         with _patch_openai(json.dumps(valid_llm_json)):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
@@ -486,7 +486,7 @@ class TestAC5_TalkingPoints:
     def test_all_three_components_present(self, manufacturing_ransomware_intent,
                                           knowledge_base, valid_llm_json,
                                           monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         with _patch_openai(json.dumps(valid_llm_json)):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
@@ -498,7 +498,7 @@ class TestAC5_TalkingPoints:
     def test_talking_points_is_nonempty_string(self, manufacturing_ransomware_intent,
                                                knowledge_base, valid_llm_json,
                                                monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         with _patch_openai(json.dumps(valid_llm_json)):
             result = generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
@@ -511,13 +511,13 @@ class TestLLMUnavailable:
 
     def test_missing_api_key_raises(self, manufacturing_ransomware_intent,
                                     knowledge_base, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "")
+        monkeypatch.setenv("LLM_API_KEY", "")
         with pytest.raises(LLMUnavailableError, match="LLM_API_KEY not configured"):
             generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
     def test_timeout_raises(self, manufacturing_ransomware_intent,
                             knowledge_base, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         mock_client = MagicMock()
         mock_client.chat.completions.create.side_effect = httpx.TimeoutException(
             "Connection timed out",
@@ -529,7 +529,7 @@ class TestLLMUnavailable:
 
     def test_empty_response_raises(self, manufacturing_ransomware_intent,
                                    knowledge_base, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
@@ -542,21 +542,21 @@ class TestLLMUnavailable:
 
     def test_completely_invalid_json_raises(self, manufacturing_ransomware_intent,
                                             knowledge_base, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         with _patch_openai("this is not json at all!!!"):
             with pytest.raises(LLMUnavailableError, match="Invalid JSON"):
                 generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
     def test_gibberish_json_raises(self, manufacturing_ransomware_intent,
                                    knowledge_base, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         with _patch_openai('{"broken": true, no_quotes_here}'):
             with pytest.raises(LLMUnavailableError):
                 generate_prep(manufacturing_ransomware_intent, knowledge_base)
 
     def test_error_message_descriptive_for_timeout(self, manufacturing_ransomware_intent,
                                                    knowledge_base, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         mock_client = MagicMock()
         mock_client.chat.completions.create.side_effect = httpx.TimeoutException(
             "Connection timed out",
@@ -569,7 +569,7 @@ class TestLLMUnavailable:
 
     def test_error_message_descriptive_for_missing_key(self, manufacturing_ransomware_intent,
                                                        knowledge_base, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "")
+        monkeypatch.setenv("LLM_API_KEY", "")
         with pytest.raises(LLMUnavailableError) as exc_info:
             generate_prep(manufacturing_ransomware_intent, knowledge_base)
         assert "api_key" in str(exc_info.value).lower()
@@ -581,7 +581,7 @@ class TestLLMUnavailable:
     def test_generic_api_error_wrapped(self, manufacturing_ransomware_intent,
                                        knowledge_base, monkeypatch):
         """A generic exception from the OpenAI client is wrapped as LLMUnavailableError."""
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         mock_client = MagicMock()
         mock_client.chat.completions.create.side_effect = RuntimeError(
             "Connection refused"
@@ -687,7 +687,7 @@ class TestAC6_PartialJsonRecovery:
     def test_generate_prep_recovers_from_partial_json(self, manufacturing_ransomware_intent,
                                                       knowledge_base, monkeypatch):
         """generate_prep recovers when LLM returns valid JSON missing 2 required fields."""
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         partial = {
             "scenario_assessment": "Urgency: urgent. Manufacturing ransomware.",
             "sensitivity_alerts": ["Alert 1", "Alert 2", "Alert 3"],
@@ -705,7 +705,7 @@ class TestAC6_PartialJsonRecovery:
     def test_recovered_package_has_all_6_modules(self, manufacturing_ransomware_intent,
                                                  knowledge_base, monkeypatch):
         """Even with partial input, recovered package has all 6 module fields."""
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         partial = {
             "scenario_assessment": "Urgent.",
             "sensitivity_alerts": ["A1", "A2", "A3"],
@@ -726,7 +726,7 @@ class TestAC6_PartialJsonRecovery:
     def test_markdown_wrapped_json_recovery(self, manufacturing_ransomware_intent,
                                             knowledge_base, monkeypatch):
         """LLM returns JSON wrapped in markdown code fences -> cleaned and parsed."""
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         valid_json = {
             "scenario_assessment": "Urgency: high.",
             "sensitivity_alerts": ["A1", "A2", "A3"],
@@ -877,7 +877,7 @@ class TestOpenAIClientInteraction:
 
     def test_openai_called_with_correct_model(self, manufacturing_ransomware_intent,
                                               knowledge_base, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = _make_fake_response(
             json.dumps({
@@ -899,7 +899,7 @@ class TestOpenAIClientInteraction:
 
     def test_openai_called_with_json_format(self, manufacturing_ransomware_intent,
                                             knowledge_base, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = _make_fake_response(
             json.dumps({
@@ -921,7 +921,7 @@ class TestOpenAIClientInteraction:
 
     def test_prompt_sent_as_user_message(self, manufacturing_ransomware_intent,
                                          knowledge_base, monkeypatch):
-        monkeypatch.setattr("jarvis.engine.llm_engine.LLM_API_KEY", "test-key-123")
+        monkeypatch.setenv("LLM_API_KEY", "test-key-123")
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = _make_fake_response(
             json.dumps({

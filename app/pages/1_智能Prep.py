@@ -1,6 +1,25 @@
 """Smart Prep page - main Prep package generation UI."""
 
+import os
+
 import streamlit as st
+
+# ---------------------------------------------------------------------------
+# Bridge Streamlit secrets → environment variables (for local dev)
+# On Streamlit Cloud, secrets are already available as env vars.
+# ---------------------------------------------------------------------------
+_SECRET_KEYS = [
+    "LLM_API_KEY", "LLM_BASE_URL", "LLM_MODEL", "LLM_TIMEOUT",
+    "THREAT_INTEL_API_KEY",
+]
+for _key in _SECRET_KEYS:
+    if _key not in os.environ:
+        try:
+            val = st.secrets[_key]
+            if val:
+                os.environ[_key] = str(val)
+        except (KeyError, FileNotFoundError):
+            pass
 
 # ---------------------------------------------------------------------------
 # Top-level imports (wrapped so the page still renders if modules are missing)
