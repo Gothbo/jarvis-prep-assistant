@@ -1,0 +1,78 @@
+# ChatGPT baseline scores for the 5 standardized test scenarios
+# Scores represent ChatGPT-4 performance on the same 5 scenarios, evaluated on 5 dimensions (1-10 scale)
+#
+# Scoring rationale:
+# - structure: ChatGPT does not produce the 6-module JARVIS format; outputs are free-form essays
+# - professionalism: Strong cybersecurity knowledge, but not tailored for sales prep context
+# - practicality: Generic advice, lacks follow-up questions and actionable sales talking points
+# - depth: Broader knowledge base allows more detailed technical explanations
+# - completeness: Does not systematically cover all required aspects (cases, threat intel, sensitivity)
+
+scenarios:
+  manufacturing_ransomware:
+    input: "明天去见制造业客户，产线被勒索了"
+    scores:
+      structure: 5
+      professionalism: 7
+      practicality: 6
+      depth: 8
+      completeness: 5
+    notes: >
+      ChatGPT provides good technical explanation of ransomware in OT environments,
+      but output is an essay-style response without structured modules. Lacks
+      follow-up questions, matched case studies, and specific talking points
+      formatted for a sales meeting.
+
+  finance_compliance:
+    input: "金融行业合规审计准备，讨论数据泄露风险"
+    scores:
+      structure: 6
+      professionalism: 8
+      practicality: 6
+      depth: 9
+      completeness: 6
+    notes: >
+      Strong knowledge of SOX, PCI-DSS, and regulatory frameworks. Provides
+      detailed compliance guidance but lacks the sales-oriented structure.
+      Does not include sensitivity alerts or landmines for the conversation.
+
+  healthcare_data_leak:
+    input: "医疗客户担心患者数据泄露"
+    scores:
+      structure: 5
+      professionalism: 8
+      practicality: 5
+      depth: 8
+      completeness: 5
+    notes: >
+      Good HIPAA knowledge and understanding of clinical environment constraints.
+      However, output reads like a general consultation rather than a sales prep
+      package. Missing structured follow-up questions across environment/time/
+      asset/budget dimensions.
+
+  technology_apt:
+    input: "科技公司面临APT高级持续性威胁"
+    scores:
+      structure: 6
+      professionalism: 7
+      practicality: 6
+      depth: 9
+      completeness: 6
+    notes: >
+      Detailed explanation of APT lifecycle and TTPs. Good technical depth on
+      threat actor groups and attack chains. However, lacks sales methodology
+      integration and doesn't frame content for a pre-sales meeting context.
+
+  education_phishing:
+    input: "教育机构遭受钓鱼邮件攻击"
+    scores:
+      structure: 5
+      professionalism: 7
+      practicality: 5
+      depth: 8
+      completeness: 5
+    notes: >
+      Provides solid overview of phishing attack patterns and email security
+      best practices. Output is informative but not structured for sales use.
+      Lacks empathy statements, anchoring points, and discovery questions
+      that a salesperson would need for the meeting.

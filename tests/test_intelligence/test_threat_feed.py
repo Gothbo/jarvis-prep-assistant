@@ -19,7 +19,6 @@ from jarvis.intelligence.threat_feed import (
     CACHE_TTL,
     SAMPLE_THREATS,
     ThreatEvent,
-    _fetch_from_api,
     _read_cache,
     _write_cache,
     fetch_threats,
@@ -199,9 +198,10 @@ class TestAC3_SilentDegradation:
                 assert len(result) >= 1
 
     def test_unknown_industry_returns_empty_list(self, isolated_cache):
-        """An industry not in SAMPLE_THREATS and without API key returns []."""
-        result = fetch_threats("nonexistent_industry_xyz")
-        assert result == []
+        """An industry not in SAMPLE_THREATS and without API data returns []."""
+        with patch.object(threat_feed, "_fetch_from_api", return_value=[]):
+            result = fetch_threats("nonexistent_industry_xyz")
+            assert result == []
 
 
 # ===================================================================
@@ -329,6 +329,12 @@ class TestAC5_SampleDataFallback:
     """AC5: Given API unavailable and no cache, returns hardcoded sample data
     marked as '[Sample]'."""
 
+    @pytest.fixture(autouse=True)
+    def _force_api_failure(self):
+        """Ensure _fetch_from_api returns empty so fetch_threats falls back to samples."""
+        with patch.object(threat_feed, "_fetch_from_api", return_value=[]):
+            yield
+
     def test_manufacturing_titles_start_with_sample(self, isolated_cache):
         result = fetch_threats("manufacturing")
         for event in result:
@@ -366,27 +372,6 @@ class TestAC5_SampleDataFallback:
             assert event.description
             # source_url may be None per model, but sample data provides one
             assert event.source_url is not None
-
-
-# ===================================================================
-# AC-Placeholder: _fetch_from_api raises NotImplementedError
-# ===================================================================
-
-
-class TestACPlaceholder_ApiNotImplemented:
-    """Verify _fetch_from_api is still a placeholder (raises NotImplementedError)."""
-
-    def test_fetch_from_api_raises_not_implemented(self):
-        with pytest.raises(NotImplementedError, match="API integration"):
-            _fetch_from_api("manufacturing", "fake-api-key")
-
-    def test_fetch_from_api_signature(self):
-        """_fetch_from_api accepts (industry, api_key) parameters."""
-        import inspect
-        sig = inspect.signature(_fetch_from_api)
-        params = list(sig.parameters.keys())
-        assert "industry" in params
-        assert "api_key" in params
 
 
 # ===================================================================
