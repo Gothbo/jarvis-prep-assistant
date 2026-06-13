@@ -4,10 +4,9 @@ import logging
 from pathlib import Path
 
 from jarvis.knowledge.loader import KnowledgeBase
+from jarvis.paths import CHROMA_DIR
 
 logger = logging.getLogger(__name__)
-
-CHROMA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data" / "chroma_db"
 
 
 def build_index(kb: KnowledgeBase, persist_dir: Path | None = None) -> bool:

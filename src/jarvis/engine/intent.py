@@ -2,13 +2,12 @@
 
 import logging
 from dataclasses import dataclass
-from pathlib import Path
 
 import yaml
 
-logger = logging.getLogger(__name__)
+from jarvis.paths import DICT_DIR
 
-DICT_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data" / "dict"
+logger = logging.getLogger(__name__)
 
 
 @dataclass

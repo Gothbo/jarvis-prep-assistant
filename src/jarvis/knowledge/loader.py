@@ -10,10 +10,9 @@ from jarvis.models.case import Case
 from jarvis.models.methodology import Methodology
 from jarvis.models.product import Product
 from jarvis.models.sensitivity import SensitivityProfile
+from jarvis.paths import DATA_DIR
 
 logger = logging.getLogger(__name__)
-
-DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data"
 
 
 class KnowledgeBase:

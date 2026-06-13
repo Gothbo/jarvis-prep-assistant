@@ -9,10 +9,10 @@ from pathlib import Path
 import httpx
 
 from jarvis.models.prep_package import ThreatEvent
+from jarvis.paths import CACHE_DIR
 
 logger = logging.getLogger(__name__)
 
-CACHE_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data" / "cache"
 CACHE_TTL = 86400  # 24 hours in seconds
 API_TIMEOUT = 10.0
 

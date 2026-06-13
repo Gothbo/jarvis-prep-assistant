@@ -5,10 +5,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from jarvis.knowledge.loader import KnowledgeBase
+from jarvis.paths import CHROMA_DIR
 
 logger = logging.getLogger(__name__)
 
-CHROMA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data" / "chroma_db"
 SIMILARITY_THRESHOLD = 0.5
 TOP_K = 3
 SEARCH_TIMEOUT = 3.0
