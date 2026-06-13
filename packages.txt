@@ -1,0 +1,4 @@
+# System-level dependencies for Streamlit Cloud
+# ChromaDB needs build tools for native extensions
+build-essential
+python3-dev
