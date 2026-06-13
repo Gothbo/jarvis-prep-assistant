@@ -1,2 +1,1 @@
-# System-level dependencies for Streamlit Cloud (Debian/Ubuntu)
-# Currently no extra system packages needed (chromadb is optional)
+
