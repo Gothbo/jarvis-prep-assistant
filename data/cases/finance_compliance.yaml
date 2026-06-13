@@ -4,24 +4,16 @@ scenario: compliance
 
 pain_points:
   surface: >
-    An upcoming regulatory compliance audit requires the institution to demonstrate a
-    comprehensive and verifiable security posture. The audit scope covers multiple
-    regulatory frameworks including SOX, PCI-DSS, and regional data protection laws.
-    Current documentation is fragmented across departments, and evidence collection
-    has historically required weeks of manual effort from already-overburdened staff.
+    即将到来的监管合规审计要求机构展示全面且可验证的安全态势。审计范围涵盖多个监管框架，包括 SOX、PCI-DSS 和各地区数据保护法规。
+    当前文档碎片化分布在各部门，证据收集历来需要已经负担过重的员工花费数周时间手动完成。
   deep: >
-    The root problem extends beyond the immediate audit: security tools are fragmented
-    across different departments with no unified visibility — the risk team uses one SIEM,
-    operations uses another, and neither feeds a centralized compliance framework. Evidence
-    collection is entirely manual, relying on spreadsheets, email threads, and screenshot
-    archives that are inconsistent and often outdated. Control mapping between regulatory
-    requirements and actual implemented controls is done ad-hoc per audit, with no reusable
-    framework. This creates a pattern of "compliance scramble" every audit cycle rather
-    than continuous compliance assurance.
+    根本问题超出了眼前的审计范围：安全工具碎片化分布在不同部门，缺乏统一可见性——风险团队使用一个 SIEM，运维团队使用另一个，两者都无法接入集中化的合规框架。
+    证据收集完全依赖手动操作，依靠电子表格、邮件往来和截图存档，内容不一致且往往已过时。监管要求与实际实施控制之间的控制映射每次审计都临时拼凑，没有可复用的框架。
+    这导致每个审计周期都陷入"合规冲刺"的模式，而非持续的合规保障。
 
 solution:
-  method: "Compliance Gap Analysis & Continuous Monitoring Framework"
-  product: "Unified SIEM + GRC Platform + Data Loss Prevention (DLP) Solution"
+  method: "合规差距分析与持续监控框架"
+  product: "统一 SIEM + GRC 平台 + 数据防泄露（DLP）解决方案"
   phases:
     - >
       Control assessment: systematically map all current security controls against

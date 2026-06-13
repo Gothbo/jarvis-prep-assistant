@@ -1,16 +1,16 @@
 id: finance_sens
 industry: finance
-primary_sensitivity: "Regulatory compliance and customer trust - breaches erode both simultaneously"
+primary_sensitivity: "数据安全和客户信任——数据泄露同时摧毁合规地位和客户信任"
 secondary_sensitivities:
-  - "Executive liability - C-suite faces personal risk from compliance failures"
-  - "Third-party risk - vendor and supply chain security gaps"
-  - "Transaction system integrity - any disruption to trading/payment systems is unacceptable"
+  - "高管个人责任——合规失败可能导致C-level面临个人风险"
+  - "第三方风险——供应商和供应链安全缺口"
+  - "交易系统完整性——任何对交易/支付系统的中断都不可接受"
 landmines:
-  - "Never imply current non-compliance - always frame as strengthening posture"
-  - "Don't discuss specific regulatory fines unless they are public knowledge"
-  - "Avoid suggesting that their current security team is inadequate"
-  - "Don't reference customer data breaches at their competitors"
+  - "绝不暗示当前存在合规缺陷——用'增强合规覆盖'而非'修补合规漏洞'"
+  - "不要讨论具体的监管罚款，除非是已公开的信息"
+  - "不要暗示客户的安全团队能力不足"
+  - "不要提及竞争对手的数据泄露事件"
 empathy_phrases:
-  - "The regulatory landscape is evolving faster than any team can keep up with alone"
-  - "We know your security team is managing an enormous surface area with finite resources"
-  - "Customer trust takes years to build and seconds to lose - we help protect both"
+  - "金融行业的监管环境变化比任何团队能单独跟上的速度都快"
+  - "我们理解安全团队在用有限的资源管理巨大的攻击面"
+  - "客户信任需要数年建立但几秒就能失去——我们帮助保护这两者"

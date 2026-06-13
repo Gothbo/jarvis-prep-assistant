@@ -1,0 +1,23 @@
+id: product_waf
+name: "WAF Web应用防火墙"
+category: "web_security"
+description: >
+  网站安全安检仪/扫描仪——像机场安检一样，对每一个访问网站的请求进行安全检查，
+  拦截SQL注入、XSS跨站脚本、CC攻击、恶意爬虫等Web层攻击。
+  部署在Web服务器前方，3分钟即可上线（云端WAF），按流量付费。
+key_features:
+  - "SQL注入/XSS/CSRF等Web攻击实时拦截"
+  - "CC攻击防护和Bot识别"
+  - "3分钟云端部署，无需硬件采购"
+  - "攻击日志和报表，合规审计可用"
+  - "策略可调优，适应业务特性"
+applicable_industries:
+  - finance
+  - healthcare
+  - education
+  - retail
+  - government
+applicable_scenarios:
+  - data_leak
+  - apt
+  - compliance

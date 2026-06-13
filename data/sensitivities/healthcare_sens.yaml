@@ -1,16 +1,16 @@
 id: healthcare_sens
 industry: healthcare
-primary_sensitivity: "Patient safety and care continuity - security measures must never interfere with patient care"
+primary_sensitivity: "业务连续性（不能停诊）——安全措施绝不能影响患者诊疗和核心业务系统运行"
 secondary_sensitivities:
-  - "HIPAA/regulatory compliance with personal liability for executives"
-  - "Medical staff workload - already overburdened, security adds friction"
-  - "Legacy medical devices - many cannot be patched or replaced easily"
+  - "设备兼容性——老旧医疗设备（PACS/HIS/LIS）不能有任何影响"
+  - "防勒索——医疗数据被加密等于停诊，赎金不是选项"
+  - "IT团队负担——5人团队保障8000+日门诊，方案必须不增加运维量"
 landmines:
-  - "Never suggest security measures that could delay patient care"
-  - "Don't imply that clinical staff are security risks due to convenience shortcuts"
-  - "Avoid FUD about regulatory penalties - focus on patient outcomes"
-  - "Don't recommend replacing medical devices solely for security reasons"
+  - "绝不能建议影响诊疗业务的安全措施——旁路部署是唯一可接受方式"
+  - "不要暗示医护人员因便利而忽视安全——他们只是压力太大"
+  - "不要用监管罚款来恐吓——聚焦在患者安全和业务连续性"
+  - "不要仅因安全原因建议更换医疗设备——医疗设备有其生命周期"
 empathy_phrases:
-  - "In healthcare, every decision ultimately impacts patient outcomes - we never forget that"
-  - "Your clinical teams are heroes working under immense pressure - our tools should make their lives easier, not harder"
-  - "We understand that medical devices have lifecycles that don't align with typical IT refresh cycles"
+  - "在医疗行业，每个决定最终都影响患者——我们从不忘记这一点"
+  - "您的医护团队在巨大压力下工作——安全工具应该让他们的生活更轻松而非更困难"
+  - "我们理解医疗设备的生命周期和普通IT设备不同，不能用同一标准要求"

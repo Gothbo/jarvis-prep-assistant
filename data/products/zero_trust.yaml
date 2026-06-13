@@ -1,0 +1,22 @@
+id: product_zero_trust
+name: "零信任安全架构"
+category: "access_control"
+description: >
+  不只锁大门，每间房都锁——传统安全假设内网是安全的（'城堡+护城河'模型），
+  零信任则假设每个访问请求都可能存在风险，无论来自内网还是外网。
+  每次访问都要验证身份和权限，最小化可访问资源。
+  特别适合远程办公、多云环境和高安全需求场景。
+key_features:
+  - "最小权限：每个人只能访问被授权的资源"
+  - "网络隐身：未认证设备看不到任何内部资源"
+  - "远程办公安全：不依赖VPN，安全访问内网"
+  - "横向移动防护：即使一台机器被攻破也无法扩散"
+  - "持续验证：不只登录时验证，全程持续评估"
+applicable_industries:
+  - finance
+  - government
+  - healthcare
+applicable_scenarios:
+  - apt
+  - data_leak
+  - ransomware

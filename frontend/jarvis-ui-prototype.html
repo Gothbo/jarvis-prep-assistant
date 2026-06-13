@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS - AI 售前助手</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        brand: { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81' },
+        surface: { DEFAULT:'#ffffff', dark:'#0f172a' },
+        sidebar: { DEFAULT:'#0f172a', hover:'rgba(255,255,255,0.06)', active:'rgba(99,102,241,0.14)' },
+      },
+      fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] },
+      borderRadius: { xl:'16px', lg:'14px', md:'12px', sm:'10px' },
+    }
+  }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ── CSS Variables (per ckm:ui-styling skill §Theming) ── */
+  :root {
+    --bg: #f8fafc; --bg-card: #ffffff; --bg-muted: #f1f5f9;
+    --fg: #0f172a; --fg-secondary: #475569; --fg-muted: #64748b; --fg-faint: #94a3b8;
+    --border: #eef2f7; --border-strong: #e2e8f0; --border-focus: #6366f1;
+    --accent: #6366f1; --accent-hover: #4f46e5; --accent-light: #eef2ff;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.03);
+    --shadow-lg: 0 8px 36px rgba(0,0,0,0.09), 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-focus: 0 0 0 3px rgba(99,102,241,0.08);
+    --radius: 14px; --radius-sm: 10px; --radius-lg: 16px;
+  }
+  .dark {
+    --bg: #0b1222; --bg-card: #131c2e; --bg-muted: #1a2438;
+    --fg: #e2e8f0; --fg-secondary: #94a3b8; --fg-muted: #64748b; --fg-faint: #475569;
+    --border: #1e293b; --border-strong: #334155; --border-focus: #818cf8;
+    --accent: #818cf8; --accent-hover: #6366f1; --accent-light: rgba(129,140,248,0.12);
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.22), 0 1px 2px rgba(0,0,0,0.14);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.32), 0 2px 6px rgba(0,0,0,0.18);
+    --shadow-lg: 0 8px 36px rgba(0,0,0,0.42), 0 4px 12px rgba(0,0,0,0.22);
+    --shadow-focus: 0 0 0 3px rgba(129,140,248,0.15);
+  }
+
+  /* ── Base ── */
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--fg); -webkit-font-smoothing:antialiased; }
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border-strong); border-radius:3px; }
+
+  /* ── Sidebar ── */
+  .sidebar { background:#0f172a; width:256px; height:100vh; position:fixed; left:0; top:0; display:flex; flex-direction:column; z-index:50; }
+  .sidebar-logo { padding:20px 22px 16px; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .sidebar-nav { flex:1; padding:12px 12px; overflow-y:auto; }
+  .sidebar-label { padding:18px 14px 6px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:rgba(255,255,255,0.28); }
+  .nav-item { display:flex; align-items:center; gap:11px; padding:9px 14px; border-radius:9px; color:rgba(255,255,255,0.6); cursor:pointer; transition:all 0.15s ease; font-size:13.5px; font-weight:450; margin-bottom:2px; }
+  .nav-item:hover { background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.88); }
+  .nav-item.active { background:rgba(99,102,241,0.14); color:#a5b4fc; }
+  .nav-item .icon-wrap { width:19px; height:19px; flex-shrink:0; }
+  .nav-item .badge { margin-left:auto; background:rgba(255,255,255,0.08); padding:1px 7px; border-radius:10px; font-size:11px; font-weight:500; }
+  .sidebar-user { padding:16px 18px; border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:11px; }
+  .sidebar-avatar { width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,#6366f1,#06b6d4); display:flex; align-items:center; justify-content:center; color:white; font-size:13px; font-weight:600; flex-shrink:0; }
+  .sidebar-name { font-size:13px; font-weight:500; color:rgba(255,255,255,0.85); }
+  .sidebar-role { font-size:11px; color:rgba(255,255,255,0.38); }
+
+  /* ── Main ── */
+  .main-wrap { margin-left:256px; min-height:100vh; display:flex; flex-direction:column; }
+  .topbar { height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 40px; background:var(--bg); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:40; backdrop-filter:blur(12px); }
+  .dark .topbar { background:rgba(11,18,34,0.85); }
+  .topbar-title { font-size:15px; font-weight:600; color:var(--fg); letter-spacing:-0.01em; }
+  .topbar-actions { display:flex; align-items:center; gap:6px; }
+  .topbar-btn { width:34px; height:34px; border-radius:9px; border:none; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--fg-muted); transition:all 0.15s ease; }
+  .topbar-btn:hover { background:var(--bg-muted); color:var(--fg); }
+
+  /* ── Page container ── */
+  .page-wrap { padding:36px 44px; flex:1; width:100%; }
+  @media (min-width:1280px) { .page-wrap { max-width:960px; } }
+
+  /* ── Shared components ── */
+  .card { background:var(--bg-card); border-radius:var(--radius-lg); border:1px solid var(--border); box-shadow:var(--shadow-sm); transition:box-shadow 0.25s, border-color 0.25s; padding:28px 32px; }
+  .card:hover { box-shadow:var(--shadow-md); border-color:var(--border-strong); }
+  .page-header { margin-bottom:32px; }
+  .page-header h1 { font-size:24px; font-weight:700; color:var(--fg); margin-bottom:8px; letter-spacing:-0.02em; }
+  .page-header p { font-size:14px; color:var(--fg-muted); line-height:1.6; }
+
+  .input-wrap { background:var(--bg-card); border:1px solid var(--border-strong); border-radius:var(--radius); padding:18px 22px; transition:all 0.2s; }
+  .input-wrap:focus-within { border-color:var(--border-focus); box-shadow:var(--shadow-focus), var(--shadow-sm); }
+  .input-wrap textarea, .input-wrap input[type=text], .input-wrap input[type=password] { width:100%; border:none; outline:none; resize:none; font-size:14px; line-height:1.65; color:var(--fg); background:transparent; font-family:inherit; }
+  .input-wrap textarea::placeholder, .input-wrap input::placeholder { color:var(--fg-faint); }
+
+  .btn-primary { display:inline-flex; align-items:center; gap:7px; padding:10px 22px; background:var(--accent); color:white; border:none; border-radius:11px; font-size:14px; font-weight:500; cursor:pointer; transition:all 0.15s; font-family:inherit; letter-spacing:-0.01em; }
+  .btn-primary:hover { background:var(--accent-hover); transform:translateY(-1px); box-shadow:0 6px 20px rgba(99,102,241,0.25); }
+  .btn-primary:active { transform:translateY(0); }
+  .btn-primary:disabled { opacity:0.55; transform:none; box-shadow:none; }
+
+  .btn-secondary { display:inline-flex; align-items:center; gap:7px; padding:10px 22px; background:var(--bg-card); color:var(--fg-secondary); border:1px solid var(--border-strong); border-radius:11px; font-size:14px; font-weight:500; cursor:pointer; transition:all 0.15s; font-family:inherit; }
+  .btn-secondary:hover { background:var(--bg-muted); }
+
+  .select-wrap { width:100%; padding:11px 16px; border:1px solid var(--border-strong); border-radius:10px; font-size:13px; color:var(--fg); background:var(--bg-card); cursor:pointer; font-family:inherit; transition:border-color 0.15s; }
+  .select-wrap:focus { outline:none; border-color:var(--border-focus); box-shadow:var(--shadow-focus); }
+
+  /* ── Chat ── */
+  .msg-row { display:flex; gap:11px; max-width:640px; animation:msgIn 0.22s ease; }
+  .msg-row.user { margin-left:auto; flex-direction:row-reverse; }
+  .msg-avatar { width:34px; height:34px; border-radius:11px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; }
+  .msg-avatar.customer { background:var(--accent-light); color:var(--accent); }
+  .msg-avatar.user { background:var(--fg); color:white; }
+  .dark .msg-avatar.user { background:#334155; color:#e2e8f0; }
+  .msg-bubble { padding:16px 20px; border-radius:var(--radius); font-size:14px; line-height:1.7; }
+  .msg-bubble.customer { background:var(--bg-muted); border:1px solid var(--border); color:var(--fg); border-bottom-left-radius:4px; }
+  .msg-bubble.user { background:var(--accent); color:white; border-bottom-right-radius:4px; }
+  .msg-time { font-size:11px; color:var(--fg-faint); margin-top:3px; }
+  .msg-row.user .msg-time { text-align:right; }
+  @keyframes msgIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── KB Grid ── */
+  .kb-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:20px; }
+  .kb-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; cursor:pointer; transition:all 0.25s; box-shadow:var(--shadow-sm); }
+  .kb-card:hover { border-color:var(--accent); box-shadow:var(--shadow-md); transform:translateY(-2px); }
+  .kb-tag { display:inline-block; padding:3px 9px; border-radius:7px; font-size:11px; font-weight:500; margin-bottom:12px; }
+  .kb-card h3 { font-size:15px; font-weight:600; margin-bottom:8px; color:var(--fg); }
+  .kb-card p { font-size:13px; color:var(--fg-muted); line-height:1.6; }
+
+  /* ── Score ── */
+  .score-row { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+  .score-label { font-size:13px; color:var(--fg-muted); width:80px; flex-shrink:0; font-weight:500; }
+  .score-track { flex:1; height:7px; background:var(--bg-muted); border-radius:4px; overflow:hidden; }
+  .score-fill { height:100%; border-radius:4px; transition:width 0.6s ease; }
+  .score-val { font-size:14px; font-weight:600; color:var(--fg); width:30px; text-align:right; }
+
+  /* ── Stat card ── */
+  .stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:26px 28px; box-shadow:var(--shadow-sm); }
+  .stat-label { font-size:12px; color:var(--fg-muted); margin-bottom:8px; font-weight:600; text-transform:uppercase; letter-spacing:0.03em; }
+  .stat-value { font-size:28px; font-weight:700; color:var(--fg); letter-spacing:-0.02em; }
+
+  /* ── Config panel ── */
+  .config-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:28px 30px; box-shadow:var(--shadow-sm); }
+  .config-label { font-size:12px; font-weight:600; color:var(--fg-muted); margin-bottom:8px; display:block; letter-spacing:0.02em; }
+
+  /* ── Tabs ── */
+  .tabs-wrap { display:flex; gap:4px; background:var(--bg-muted); border-radius:12px; padding:5px; }
+  .tab-btn { padding:9px 20px; border:none; border-radius:9px; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.15s; background:transparent; color:var(--fg-muted); font-family:inherit; }
+  .tab-btn.active { background:var(--bg-card); color:var(--fg); box-shadow:var(--shadow-sm); }
+  .tab-btn:hover:not(.active) { color:var(--fg-secondary); }
+
+  /* ── Empty state ── */
+  .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 24px; text-align:center; }
+  .empty-state h3 { font-size:17px; font-weight:600; color:var(--fg-muted); margin-bottom:8px; }
+  .empty-state p { font-size:14px; color:var(--fg-faint); max-width:340px; line-height:1.6; }
+
+  /* ── Mobile sidebar overlay ── */
+  .mobile-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; backdrop-filter:blur(4px); }
+  .mobile-sidebar { display:none; }
+  @media (max-width:1023px) {
+    .sidebar { transform:translateX(-100%); transition:transform 0.25s ease; width:256px; }
+    .sidebar.open { transform:translateX(0); }
+    .mobile-sidebar { display:block; }
+    .main-wrap { margin-left:0; }
+    .topbar { padding:0 20px; }
+    .page-wrap { padding:24px; }
+    .kb-grid { grid-template-columns:1fr; }
+    .msg-row { max-width:92%; }
+  }
+  @keyframes spin { to { transform: rotate(360deg) } }
+  @media (min-width:1024px) and (max-width:1279px) {
+    .page-wrap { max-width:none; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useEffect,useRef} = React;
+
+const API_BASE = 'http://localhost:8000/api';
+
+/* ── SVG Icon factory ── */
+const ICONS = {
+  Sparkles:() => <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 6 6 0 1 0-9-9"/><path d="M20 20a6 6 0 0 0-6-6 6 6 0 1 0 6 6"/><path d="M4 20a6 6 0 0 0 6-6 6 6 0 1 0-6 6"/></svg>,
+  Bot:() => <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8V4"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>,
+  BookOpen:() => <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+  History:() => <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 15 15"/></svg>,
+  Settings:() => <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>,
+  Search:() => <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  Bell:() => <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>,
+  Sun:() => <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>,
+  Moon:() => <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,
+  Menu:() => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>,
+  Send:() => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+  CheckCircle:() => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+  Lightbulb:() => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5C7.7 12.8 8 14.5 8 14"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>,
+  Target:() => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+  Download:() => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+  Star:() => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  ChevronRight:() => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
+  Clock:() => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  Copy:() => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>,
+  X:() => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+};
+const Icon = ({name,size=19}) => ICONS[name] ? ICONS[name]() : null;
+
+/* ── Data ── */
+const KB_DATA = [
+  {id:1,type:'cases',title:'某零售企业攻击溯源案例',desc:'大型零售商遭受APT攻击，从入侵检测到完整溯源链的全过程分析',tag:'案例',tagBg:'#e0e7ff',tagFg:'#4338ca'},
+  {id:2,type:'cases',title:'教育平台API数据泄露事件',desc:'某在线教育平台因API安全配置不当导致大量用户数据泄露',tag:'案例',tagBg:'#e0e7ff',tagFg:'#4338ca'},
+  {id:3,type:'methodology',title:'4D提问法则',desc:'通过探测(Detect)、深入(Deepen)、决策(Decide)、交付(Deliver)四阶段结构化提问',tag:'方法论',tagBg:'#d1fae5',tagFg:'#065f46'},
+  {id:4,type:'methodology',title:'场景化提问顺序',desc:'从业务场景出发，逐步深入到技术细节的分层提问框架',tag:'方法论',tagBg:'#d1fae5',tagFg:'#065f46'},
+  {id:5,type:'sensitivity',title:'政府行业敏感度分析',desc:'政府行业网络安全的特殊要求：合规性、保密等级、供应链安全等',tag:'行业敏感度',tagBg:'#fef3c7',tagFg:'#92400e'},
+  {id:6,type:'sensitivity',title:'金融行业敏感度分析',desc:'金融行业安全关注点：数据隐私、交易安全、监管合规、实时风控',tag:'行业敏感度',tagBg:'#fef3c7',tagFg:'#92400e'},
+  {id:7,type:'product',title:'XDR/SIEM 解决方案',desc:'全方位检测与响应平台，整合端点、网络、云端告警进行智能关联分析',tag:'产品',tagBg:'#f3e8ff',tagFg:'#7c3aed'},
+  {id:8,type:'product',title:'WAF/Web安全防护',desc:'下一代Web应用防火墙，防护OWASP Top 10攻击与API滥用',tag:'产品',tagBg:'#f3e8ff',tagFg:'#7c3aed'},
+  {id:9,type:'product',title:'零信任安全架构',desc:'以身份为中心的最小权限访问控制，覆盖网络、应用、数据的全面零信任',tag:'产品',tagBg:'#f3e8ff',tagFg:'#7c3aed'},
+  {id:10,type:'cases',title:'医疗行业勒索软件应急',desc:'某三甲医院遭受勒索软件攻击后的应急响应与数据恢复全过程',tag:'案例',tagBg:'#e0e7ff',tagFg:'#4338ca'},
+];
+const INDUSTRIES = ['政府','金融','医疗','教育','零售','能源','制造','互联网'];
+const SCENARIOS = {'政府':['等级保护合规','数据安全治理','电子政务安全','关键信息基础设施保护'],'金融':['移动金融安全','开放银行API安全','交易反欺诈','合规审计'],'医疗':['医疗数据隐私','医疗IoT安全','远程诊疗安全','勒索软件防御'],'教育':['在线教育平台安全','学生隐私保护','教务系统防护','API安全'],'零售':['支付安全','消费者隐私','供应链安全','电商平台防护'],'能源':['工控系统安全','智能电网防护','油气管道监测','新能源安全'],'制造':['工业互联网安全','智能制造防护','OT安全','供应链安全'],'互联网':['云原生安全','API安全治理','零信任架构','数据安全合规']};
+const PERSONALITIES = ['怀疑型','预算敏感型','技术专家型','友好型','随机'];
+const fmtTime = () => { const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
+
+/* ── Dark mode toggle ── */
+function useDarkMode() {
+  const [dark, setDark] = useState(() => {
+    try { return localStorage.getItem('jarvis-theme') === 'dark'; } catch { return false; }
+  });
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    try { localStorage.setItem('jarvis-theme', dark ? 'dark' : 'light'); } catch {}
+  }, [dark]);
+  return [dark, () => setDark(d => !d)];
+}
+
+/* ── App ── */
+function App() {
+  const [page, setPage] = useState('smartprep');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [dark, toggleDark] = useDarkMode();
+
+  const closeSidebar = () => setSidebarOpen(false);
+
+  return (<div style={{display:'flex', minHeight:'100vh'}}>
+    {/* Mobile overlay */}
+    {sidebarOpen && <div className="mobile-overlay" onClick={closeSidebar}/>}
+    {/* Sidebar */}
+    <div className={`sidebar${sidebarOpen ? ' open' : ''}`}>
+      <div className="sidebar-logo">
+        <div style={{display:'flex', alignItems:'center', gap:10}}>
+          <div style={{width:32, height:32, borderRadius:10, background:'linear-gradient(135deg,#6366f1,#06b6d4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:700, color:'white', flexShrink:0}}>J</div>
+          <span style={{fontSize:17, fontWeight:700, color:'rgba(255,255,255,0.95)', letterSpacing:'-0.02em'}}>JARVIS</span>
+        </div>
+      </div>
+      <div className="sidebar-nav">
+        <div className="sidebar-label">核心功能</div>
+        <NavBtn icon="Sparkles" label="智能售前准备" active={page==='smartprep'} onClick={()=>{setPage('smartprep');closeSidebar();}}/>
+        <NavBtn icon="Bot" label="模拟训练" active={page==='training'} onClick={()=>{setPage('training');closeSidebar();}}/>
+        <div className="sidebar-label">知识管理</div>
+        <NavBtn icon="BookOpen" label="知识库" active={page==='knowledge'} onClick={()=>{setPage('knowledge');closeSidebar();}}/>
+        <NavBtn icon="History" label="历史记录" active={page==='history'} onClick={()=>{setPage('history');closeSidebar();}} badge="12"/>
+        <div className="sidebar-label">系统</div>
+        <NavBtn icon="Settings" label="设置" active={page==='settings'} onClick={()=>{setPage('settings');closeSidebar();}}/>
+      </div>
+      <div className="sidebar-user">
+        <div className="sidebar-avatar">张</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div className="sidebar-name">张明</div>
+          <div className="sidebar-role">高级售前工程师</div>
+        </div>
+      </div>
+    </div>
+
+    {/* Main */}
+    <div className="main-wrap">
+      <div className="topbar">
+        <div style={{display:'flex', alignItems:'center', gap:12}}>
+          <button className="topbar-btn mobile-sidebar" onClick={()=>setSidebarOpen(true)}><Icon name="Menu"/></button>
+          <div className="topbar-title">
+            {page==='smartprep'?'智能售前准备':page==='training'?'模拟训练':page==='knowledge'?'知识库':page==='history'?'历史记录':'设置'}
+          </div>
+        </div>
+        <div className="topbar-actions">
+          <button className="topbar-btn" onClick={toggleDark} aria-label="切换暗色模式">{dark ? <Icon name="Sun"/> : <Icon name="Moon"/>}</button>
+          <button className="topbar-btn"><Icon name="Search"/></button>
+          <button className="topbar-btn"><Icon name="Bell"/></button>
+        </div>
+      </div>
+      <div className="page-wrap">
+        {page==='smartprep' && <SmartPrepPage/>}
+        {page==='training' && <TrainingPage/>}
+        {page==='knowledge' && <KnowledgePage/>}
+        {page==='history' && <HistoryPage/>}
+        {page==='settings' && <SettingsPage/>}
+      </div>
+    </div>
+  </div>);
+}
+
+function NavBtn({icon,label,active,onClick,badge}) {
+  return <div className={`nav-item${active?' active':''}`} onClick={onClick}>
+    <span className="icon-wrap"><Icon name={icon}/></span>
+    <span>{label}</span>
+    {badge && <span className="badge">{badge}</span>}
+  </div>;
+}
+
+/* ── SmartPrep ── */
+function SmartPrepPage() {
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const gen = async () => {
+    if (!input.trim()) return;
+    setLoading(true);
+    setResult(null);
+    try {
+      const res = await fetch(`${API_BASE}/smartprep/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario: input })
+      });
+      const data = await res.json();
+      setResult({
+        industry: data.industry,
+        scenario: data.scenario,
+        summary: data.summary,
+        keyPoints: data.key_points,
+        products: data.products,
+        nextSteps: data.next_steps,
+      });
+    } catch (err) {
+      console.error('生成失败:', err);
+      alert('生成失败，请检查后端服务是否运行 (http://localhost:8000)');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (<div>
+    <div className="page-header"><h1>智能售前准备</h1><p>输入客户场景信息，AI将自动生成完整的售前准备方案</p></div>
+    <div className="input-wrap" style={{marginBottom:24}}>
+      <textarea placeholder="请描述客户场景，例如：某金融机构需要进行移动银行API安全加固，需要在6个月内通过合规审计..." value={input} onChange={e=>setInput(e.target.value)} rows={3}/>
+      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:14}}>
+        <span style={{fontSize:12, color:'var(--fg-faint)'}}>支持行业、场景、需求等多维度描述</span>
+        <button className="btn-primary" onClick={gen} disabled={loading||!input.trim()}>
+          {loading ? '生成中...' : '生成准备方案'} <Icon name="Sparkles" size={16}/>
+        </button>
+      </div>
+    </div>
+
+    {loading && <div style={{display:'flex', flexDirection:'column', alignItems:'center', padding:'56px 0', gap:14}}>
+      <div style={{width:36, height:36, border:'3px solid var(--border)', borderTop:'3px solid var(--accent)', borderRadius:'50%', animation:'spin 0.7s linear infinite'}}/>
+      <span style={{fontSize:14, color:'var(--fg-muted)'}}>AI正在分析客户场景并生成售前方案...</span>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </div>}
+
+    {!loading && result && <div className="card">
+      <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:24}}>
+        <div>
+          <div style={{display:'flex', gap:8, alignItems:'center', marginBottom:10}}>
+            <span style={{padding:'3px 9px', borderRadius:7, fontSize:12, fontWeight:500, background:'var(--accent-light)', color:'var(--accent)'}}>{result.industry}</span>
+            <span style={{padding:'3px 9px', borderRadius:7, fontSize:12, fontWeight:500, background:'#d1fae5', color:'#065f46'}}>{result.scenario}</span>
+          </div>
+          <h2 style={{fontSize:18, fontWeight:600, color:'var(--fg)'}}>售前准备方案</h2>
+        </div>
+        <div style={{display:'flex', gap:8}}>
+          <button className="btn-secondary" style={{padding:'8px 14px', fontSize:13}}><Icon name="Copy" size={14}/> 复制</button>
+          <button className="btn-secondary" style={{padding:'8px 14px', fontSize:13}}><Icon name="Download" size={14}/> 导出</button>
+        </div>
+      </div>
+      <p style={{fontSize:14, color:'var(--fg-secondary)', lineHeight:1.75, marginBottom:24}}>{result.summary}</p>
+      <div style={{marginBottom:24}}>
+        <h3 style={{fontSize:14, fontWeight:600, color:'var(--fg)', marginBottom:12}}>关键要点</h3>
+        {result.keyPoints.map((pt,i) => <div key={i} style={{display:'flex', gap:8, alignItems:'flex-start', marginBottom:8}}>
+          <span style={{width:18, height:18, borderRadius:9, background:'var(--accent-light)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:2}}><Icon name="CheckCircle" size={12}/></span>
+          <span style={{fontSize:13, color:'var(--fg-secondary)', lineHeight:1.55}}>{pt}</span>
+        </div>)}
+      </div>
+      <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:24}}>
+        <div>
+          <h3 style={{fontSize:14, fontWeight:600, color:'var(--fg)', marginBottom:10}}>推荐产品</h3>
+          <div style={{display:'flex', flexWrap:'wrap', gap:8}}>
+            {result.products.map((p,i) => <span key={i} style={{padding:'5px 12px', borderRadius:6, fontSize:12, fontWeight:500, background:'#f3e8ff', color:'#7c3aed'}}>{p}</span>)}
+          </div>
+        </div>
+        <div>
+          <h3 style={{fontSize:14, fontWeight:600, color:'var(--fg)', marginBottom:10}}>下一步行动</h3>
+          <p style={{fontSize:13, color:'var(--fg-muted)', lineHeight:1.65}}>{result.nextSteps}</p>
+        </div>
+      </div>
+    </div>}
+
+    {!loading && !result && <div className="card">
+      <div className="empty-state">
+        <Icon name="Sparkles" size={48}/>
+        <h3>开始一次新的售前准备</h3>
+        <p>在上方输入客户场景信息，AI将自动分析并生成完整的售前准备方案</p>
+      </div>
+    </div>}
+  </div>);
+}
+
+/* ── Training ── */
+function TrainingPage() {
+  const [phase, setPhase] = useState('config');
+  const [cfg, setCfg] = useState({industry:'金融',scenario:'移动金融安全',personality:'怀疑型'});
+  const [msgs, setMsgs] = useState([]);
+  const [inputMsg, setInputMsg] = useState('');
+  const [scores, setScores] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
+  const chatRef = useRef(null);
+
+  useEffect(() => { if(chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, [msgs]);
+
+  const startChat = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/training/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ industry: cfg.industry, scenario: cfg.scenario, personality: cfg.personality })
+      });
+      const data = await res.json();
+      setSessionId(data.session_id);
+      setPhase('chatting');
+      setMsgs([{role:'customer', content: data.first_message, time:fmtTime()}]);
+    } catch (err) {
+      console.error('启动训练失败:', err);
+      alert('启动训练失败，请检查后端服务是否运行');
+    }
+  };
+
+  const sendMsg = async () => {
+    if (!inputMsg.trim() || !sessionId) return;
+    const userMsg = inputMsg.trim();
+    setMsgs(prev => [...prev, {role:'user', content: userMsg, time:fmtTime()}]);
+    setInputMsg('');
+    try {
+      const res = await fetch(`${API_BASE}/training/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId, message: userMsg })
+      });
+      const data = await res.json();
+      setMsgs(prev => [...prev, {role:'customer', content: data.reply, time:fmtTime()}]);
+    } catch (err) {
+      console.error('发送消息失败:', err);
+    }
+  };
+
+  const endTraining = async () => {
+    if (!sessionId) return;
+    try {
+      const res = await fetch(`${API_BASE}/training/end/${sessionId}`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      setScores({
+        opening: data.scores.find(s => s.dimension === 'opening')?.score || 0,
+        discovery: data.scores.find(s => s.dimension === 'discovery')?.score || 0,
+        objection: data.scores.find(s => s.dimension === 'objection')?.score || 0,
+        solution: data.scores.find(s => s.dimension === 'solution')?.score || 0,
+        closing: data.scores.find(s => s.dimension === 'closing')?.score || 0,
+        summary: data.summary,
+        takeaway: data.takeaway
+      });
+      setPhase('scored');
+    } catch (err) {
+      console.error('结束训练失败:', err);
+    }
+  };
+
+  const reset = () => { setPhase('config'); setMsgs([]); setScores(null); setInputMsg(''); setSessionId(null); };
+
+  if(phase==='config') return (<div>
+    <div className="page-header"><h1>模拟训练</h1><p>与AI客户进行真实场景的多轮对话训练，提升售前沟通能力</p></div>
+    <div style={{display:'grid', gridTemplateColumns:'300px 1fr', gap:28, alignItems:'start'}}>
+      <div className="config-panel">
+        <h3 style={{fontSize:15, fontWeight:600, color:'var(--fg)', marginBottom:22}}>训练配置</h3>
+        <div style={{marginBottom:22}}>
+          <label className="config-label">目标行业</label>
+          <select className="select-wrap" value={cfg.industry} onChange={e=>setCfg({...cfg, industry:e.target.value, scenario:SCENARIOS[e.target.value][0]})}>
+            {INDUSTRIES.map(i => <option key={i} value={i}>{i}</option>)}
+          </select>
+        </div>
+        <div style={{marginBottom:22}}>
+          <label className="config-label">业务场景</label>
+          <select className="select-wrap" value={cfg.scenario} onChange={e=>setCfg({...cfg, scenario:e.target.value})}>
+            {SCENARIOS[cfg.industry].map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+        <div style={{marginBottom:22}}>
+          <label className="config-label">客户性格</label>
+          <select className="select-wrap" value={cfg.personality} onChange={e=>setCfg({...cfg, personality:e.target.value})}>
+            {PERSONALITIES.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+        </div>
+        <button className="btn-primary" style={{width:'100%', justifyContent:'center'}} onClick={startChat}>开始训练 <Icon name="Bot" size={16}/></button>
+      </div>
+      <div>
+        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:18, marginBottom:24}}>
+          <div className="stat-card"><div className="stat-label">已完成训练</div><div className="stat-value" style={{fontSize:24}}>3</div><div style={{fontSize:12, fontWeight:500, color:'#10b981'}}>较上周 +2</div></div>
+          <div className="stat-card"><div className="stat-label">综合评分</div><div className="stat-value" style={{fontSize:24}}>78</div><div style={{fontSize:12, fontWeight:500, color:'#10b981'}}>较上次 +5</div></div>
+          <div className="stat-card"><div className="stat-label">训练时长</div><div className="stat-value" style={{fontSize:24}}>45</div><div style={{fontSize:12, color:'var(--fg-faint)'}}>分钟</div></div>
+        </div>
+        <div className="card">
+          <h3 style={{fontSize:14, fontWeight:600, color:'var(--fg)', marginBottom:12, display:'flex', alignItems:'center', gap:7}}><Icon name="Lightbulb"/> 训练建议</h3>
+          <div style={{display:'flex', flexDirection:'column', gap:6}}>
+            <p style={{fontSize:13, color:'var(--fg-muted)', lineHeight:1.6}}>• 开场时先了解客户业务背景，再逐步深入到技术细节</p>
+            <p style={{fontSize:13, color:'var(--fg-muted)', lineHeight:1.6}}>• 面对异议时，先认可客户的顾虑，再提供针对性的解决方案</p>
+            <p style={{fontSize:13, color:'var(--fg-muted)', lineHeight:1.6}}>• 收尾时要明确下一步行动，推动销售进程</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>);
+
+  if(phase==='chatting') return (<div style={{display:'flex', flexDirection:'column', height:'calc(100vh - 112px)'}}>
+    <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14}}>
+      <div>
+        <h2 style={{fontSize:16, fontWeight:600, color:'var(--fg)', marginBottom:4}}>模拟训练进行中</h2>
+        <div style={{display:'flex', gap:8, alignItems:'center', fontSize:12, color:'var(--fg-muted)'}}>
+          <span style={{padding:'2px 7px', borderRadius:5, background:'var(--accent-light)', color:'var(--accent)'}}>{cfg.industry}</span>
+          <span>{cfg.scenario}</span><span>·</span><span>性格: {cfg.personality}</span><span>·</span><span>{msgs.length} 条消息</span>
+        </div>
+      </div>
+      <button className="btn-secondary" style={{padding:'8px 16px', fontSize:13, color:'#ef4444', borderColor:'#fecaca'}} onClick={endTraining}>结束训练</button>
+    </div>
+    <div ref={chatRef} style={{flex:1, overflowY:'auto', padding:'8px 0', display:'flex', flexDirection:'column', gap:14}}>
+      {msgs.map((m,i) => <div key={i} className={`msg-row ${m.role}`}>
+        <div className={`msg-avatar ${m.role}`}>{m.role==='customer'?'客':'我'}</div>
+        <div style={{maxWidth:'100%'}}>
+          <div className={`msg-bubble ${m.role}`}>{m.content}</div>
+          <div className={`msg-time${m.role==='user'?' right':''}`}>{m.time}</div>
+        </div>
+      </div>)}
+    </div>
+    <div style={{marginTop:14, display:'flex', gap:12, alignItems:'flex-end'}}>
+      <div className="input-wrap" style={{flex:1, padding:'12px 18px'}}>
+        <textarea placeholder="输入您的回复..." value={inputMsg} onChange={e=>setInputMsg(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}} rows={2} style={{minHeight:24}}/>
+      </div>
+      <button className="btn-primary" style={{height:48, width:48, padding:0, justifyContent:'center', borderRadius:12}} onClick={sendMsg} disabled={!inputMsg.trim()}><Icon name="Send" size={18}/></button>
+    </div>
+  </div>);
+
+  if(phase==='scored') {
+    const dims=[{key:'opening',label:'开场能力',color:'#6366f1'},{key:'discovery',label:'需求挖掘',color:'#06b6d4'},{key:'objection',label:'异议处理',color:'#f59e0b'},{key:'solution',label:'方案呈现',color:'#10b981'},{key:'closing',label:'收尾能力',color:'#ef4444'}];
+    const avg = Math.round(dims.reduce((a,d)=>a+scores[d.key],0)/5);
+    return (<div>
+      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:28}}>
+        <div><h1 style={{fontSize:24, fontWeight:700, color:'var(--fg)', marginBottom:6}}>训练评分</h1><p style={{fontSize:14, color:'var(--fg-muted)'}}>基于本次对话的AI综合评估</p></div>
+        <button className="btn-primary" onClick={reset}>再次训练 <Icon name="Bot" size={16}/></button>
+      </div>
+      <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:28}}>
+        <div className="card">
+          <h3 style={{fontSize:15, fontWeight:600, color:'var(--fg)', marginBottom:20}}>五维评分</h3>
+          {dims.map(d => <div key={d.key} className="score-row">
+            <span className="score-label">{d.label}</span>
+            <div className="score-track"><div className="score-fill" style={{width:`${scores[d.key]}%`, background:d.color}}/></div>
+            <span className="score-val">{scores[d.key]}</span>
+          </div>)}
+          <div style={{marginTop:20, paddingTop:20, borderTop:'1px solid var(--border)'}}>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+              <span style={{fontSize:14, fontWeight:500, color:'var(--fg-muted)'}}>综合评分</span>
+              <span style={{fontSize:28, fontWeight:700, color:'var(--fg)', letterSpacing:'-0.02em'}}>{avg}</span>
+            </div>
+          </div>
+        </div>
+        <div className="card">
+          <div style={{marginBottom:20}}>
+            <div style={{display:'flex', gap:8, alignItems:'center', marginBottom:12}}><Icon name="Lightbulb"/><h3 style={{fontSize:15, fontWeight:600, color:'var(--fg)'}}>综合评价</h3></div>
+            <p style={{fontSize:13, color:'var(--fg-secondary)', lineHeight:1.75}}>{scores.summary}</p>
+          </div>
+          <div>
+            <div style={{display:'flex', gap:8, alignItems:'center', marginBottom:12}}><Icon name="Target"/><h3 style={{fontSize:15, fontWeight:600, color:'var(--fg)'}}>关键提炼</h3></div>
+            <div style={{padding:14, background:'#fef3c7', border:'1px solid #fde68a', borderRadius:10}}>
+              <p style={{fontSize:13, color:'#92400e', lineHeight:1.65}}>{scores.takeaway}</p>
+            </div>
+          </div>
+          <div style={{display:'flex', gap:12, marginTop:24}}>
+            <button className="btn-secondary" style={{flex:1, justifyContent:'center'}}><Icon name="Download" size={16}/> 保存报告</button>
+            <button className="btn-secondary" style={{flex:1, justifyContent:'center'}}><Icon name="Star" size={16}/> 收藏训练</button>
+          </div>
+        </div>
+      </div>
+    </div>);
+  }
+  return null;
+}
+
+/* ── Knowledge ── */
+function KnowledgePage() {
+  const [tab, setTab] = useState('all');
+  const [search, setSearch] = useState('');
+  const [kbData, setKbData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const tabs=[{k:'all',l:'全部'},{k:'cases',l:'案例'},{k:'methodology',l:'方法论'},{k:'sensitivity',l:'行业敏感度'},{k:'product',l:'产品'}];
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`${API_BASE}/knowledge/items`)
+      .then(r => r.json())
+      .then(d => { setKbData(d.items); setLoading(false); })
+      .catch(err => { console.error('加载知识库失败:', err); setLoading(false); });
+  }, []);
+
+  const filtered = kbData.filter(i => (tab==='all'||i.type===tab) && (i.title.toLowerCase().includes(search.toLowerCase()) || i.desc.toLowerCase().includes(search.toLowerCase())));
+  return (<div>
+    <div className="page-header"><h1>知识库</h1><p>浏览案例、方法论、行业敏感度和产品资料，共 {kbData.length} 条记录</p></div>
+    <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:24, gap:16, flexWrap:'wrap'}}>
+      <div className="tabs-wrap">{tabs.map(t => <button key={t.k} className={`tab-btn${tab===t.k?' active':''}`} onClick={()=>setTab(t.k)}>{t.l}</button>)}</div>
+      <div className="input-wrap" style={{padding:'8px 16px', width:220}}><input type="text" placeholder="搜索知识库..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
+    </div>
+    {loading ? <div className="card"><div className="empty-state"><div style={{width:32, height:32, border:'3px solid var(--border)', borderTop:'3px solid var(--accent)', borderRadius:'50%', animation:'spin 0.7s linear infinite', marginBottom:12}}/><h3>加载中...</h3></div></div> :
+    filtered.length===0 ? <div className="card"><div className="empty-state"><Icon name="Search" size={48}/><h3>未找到匹配内容</h3><p>尝试更换搜索关键词或筛选条件</p></div></div> :
+    <div className="kb-grid">{filtered.map(i => <div key={i.id} className="kb-card">
+      <span className="kb-tag" style={{background:i.tagBg, color:i.tagFg}}>{i.tag}</span>
+      <h3>{i.title}</h3><p>{i.desc}</p>
+      <div style={{marginTop:14, display:'flex', alignItems:'center', gap:3, fontSize:12, color:'var(--accent)', fontWeight:500}}>查看详情 <Icon name="ChevronRight" size={14}/></div>
+    </div>)}</div>}
+  </div>);
+}
+
+/* ── History ── */
+function HistoryPage() {
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/history/items`)
+      .then(r => r.json())
+      .then(d => setItems(d.items))
+      .catch(err => console.error('加载历史记录失败:', err));
+  }, []);
+
+  return (<div>
+    <div className="page-header"><h1>历史记录</h1><p>查看过往的售前准备方案和模拟训练记录</p></div>
+    <div style={{display:'flex', flexDirection:'column', gap:12}}>
+      {items.map(i => <div key={i.id} className="card" style={{padding:'22px 32px', display:'flex', alignItems:'center', gap:18, cursor:'pointer'}}>
+        <div style={{width:40, height:40, borderRadius:11, display:'flex', alignItems:'center', justifyContent:'center', background:i.type==='prep'?'var(--accent-light)':'#d1fae5', color:i.type==='prep'?'var(--accent)':'#10b981'}}><Icon name={i.type==='prep'?'Sparkles':'Bot'}/></div>
+        <div style={{flex:1, minWidth:0}}>
+          <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:3}}>
+            <span style={{fontSize:14, fontWeight:500, color:'var(--fg)'}}>{i.title}</span>
+            <span style={{fontSize:11, padding:'2px 7px', borderRadius:5, background:i.type==='prep'?'var(--accent-light)':'#d1fae5', color:i.type==='prep'?'var(--accent)':'#10b981'}}>{i.type==='prep'?'售前准备':'模拟训练'}</span>
+          </div>
+          <div style={{display:'flex', gap:12, fontSize:12, color:'var(--fg-faint)'}}>
+            <span style={{display:'flex', alignItems:'center', gap:3}}><Icon name="Clock"/> {i.date}</span>
+            <span>{i.industry}</span>
+            {i.score && <span style={{color:i.score>=80?'#10b981':i.score>=60?'#f59e0b':'#ef4444', fontWeight:500}}>评分: {i.score}</span>}
+          </div>
+        </div>
+        <Icon name="ChevronRight" size={16}/>
+      </div>)}
+    </div>
+  </div>);
+}
+
+/* ── Settings ── */
+function SettingsPage() {
+  const [settings, setSettings] = useState(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/settings/`)
+      .then(r => r.json())
+      .then(d => setSettings(d))
+      .catch(err => console.error('加载设置失败:', err));
+  }, []);
+
+  if (!settings) return <div><div className="page-header"><h1>设置</h1><p>管理系统配置和个人偏好</p></div><div className="card" style={{padding:'40px', textAlign:'center', color:'var(--fg-muted)'}}>加载设置中...</div></div>;
+
+  return (<div>
+    <div className="page-header"><h1>设置</h1><p>管理系统配置和个人偏好</p></div>
+    <div style={{display:'flex', flexDirection:'column', gap:20}}>
+      <div className="card">
+        <h3 style={{fontSize:14, fontWeight:600, color:'var(--fg)', marginBottom:18}}>LLM 模型配置</h3>
+        <div style={{marginBottom:18}}>
+          <label className="config-label">默认模型</label>
+          <select className="select-wrap" defaultValue={settings.llm.model}>
+            <option value="deepseek-chat">DeepSeek V4</option><option value="openai">OpenAI GPT-4o</option><option value="claude">Claude Sonnet 4</option>
+          </select>
+        </div>
+        <div><label className="config-label">API密钥</label>
+          <div className="input-wrap" style={{padding:'10px 16px'}}><input type="password" value={settings.llm.api_key} readOnly/></div>
+        </div>
+      </div>
+      <div className="card">
+        <h3 style={{fontSize:14, fontWeight:600, color:'var(--fg)', marginBottom:18}}>知识库管理</h3>
+        <div style={{display:'flex', gap:8, alignItems:'center', marginBottom:10}}>
+          <span style={{fontSize:13, color:'var(--fg-secondary)'}}>数据源状态</span>
+          <span style={{padding:'3px 9px', borderRadius:7, fontSize:12, fontWeight:500, background:'#d1fae5', color:'#065f46'}}>已连接 {settings.kb.data_source_count} 条</span>
+        </div>
+        <p style={{fontSize:13, color:'var(--fg-muted)', lineHeight:1.65}}>知识库状态: {settings.kb.status === 'connected' ? '已连接' : settings.kb.status}</p>
+      </div>
+    </div>
+  </div>);
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

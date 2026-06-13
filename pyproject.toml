@@ -21,6 +21,9 @@ dependencies = [
     "httpx>=0.25",
     "plotly>=5.18",
     "python-dotenv>=1.0",
+    "fastapi>=0.104",
+    "uvicorn>=0.24",
+    "python-multipart>=0.0.6",
 ]
 
 [project.optional-dependencies]

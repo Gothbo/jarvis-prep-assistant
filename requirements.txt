@@ -1,5 +1,16 @@
+# Streamlit 前端
+streamlit>=1.30
+
+# FastAPI 后端
+fastapi>=0.104
+uvicorn>=0.24
+python-multipart>=0.0.6
+httpx>=0.25
+
+# LLM
+openai>=1.30
+
+# 数据处理
 pydantic>=2.0
 pyyaml>=6.0
-streamlit>=1.30
-openai>=1.30
 jieba>=0.42

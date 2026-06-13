@@ -1,0 +1,24 @@
+id: product_vuln_scanner
+name: "漏洞扫描器"
+category: "vulnerability_management"
+description: >
+  系统体检设备——定期自动扫描所有服务器和应用，发现已知漏洞和配置缺陷。
+  就像定期体检一样，在攻击者利用漏洞之前先发现并修补。
+  合规审计的必备项，也是缩小攻击面的基础手段。
+key_features:
+  - "自动化定期扫描：系统/应用/数据库全量覆盖"
+  - "已知漏洞库匹配：CVE/CNVD/CNNVD多源更新"
+  - "风险等级排序：优先修复高危漏洞"
+  - "合规刚需：等保评估必备工具"
+  - "攻击面收敛：持续减少暴露的漏洞数量"
+applicable_industries:
+  - finance
+  - healthcare
+  - government
+  - education
+  - manufacturing
+  - retail
+applicable_scenarios:
+  - compliance
+  - apt
+  - data_leak

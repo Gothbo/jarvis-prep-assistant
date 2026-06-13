@@ -1,16 +1,16 @@
 id: manufacturing_sens
 industry: manufacturing
-primary_sensitivity: "Production uptime and output - every minute of downtime has a direct revenue impact"
+primary_sensitivity: "产线不能停——安全方案绝不能对生产线运行产生任何影响"
 secondary_sensitivities:
-  - "OT/IT team dynamics - often separate budgets and priorities"
-  - "Safety system integrity - SIS must never be compromised"
-  - "Supply chain dependencies - security must consider upstream/downstream partners"
+  - "OT/IT隔离——工控网络和办公网络的安全边界"
+  - "设备兼容性——老旧PLC和SCADA设备不能受影响"
+  - "生产效率——安全措施不能拖慢产线节拍"
 landmines:
-  - "Never suggest shutting down production for security testing without explicit executive approval"
-  - "Don't blame the OT team for legacy security gaps"
-  - "Avoid comparing IT security practices to OT - they have fundamentally different priorities"
-  - "Don't reference specific competitors by name"
+  - "绝不建议在生产环境做主动扫描——只能用旁路监听"
+  - "不要使用IT安全术语跟OT工程师说话——用'产线防护'而非'零信任'"
+  - "不要暗示IT团队不懂安全——他们只是分工不同"
+  - "不要拿停产的风险来恐吓——用'帮您保障产线持续运行'"
 empathy_phrases:
-  - "We understand that in manufacturing, uptime is everything"
-  - "Your OT team has kept these systems running for years - we respect that expertise"
-  - "Safety and production come first - our security solutions work around your operations"
+  - "制造业的安全跟互联网不一样，产线一秒钟都不能停"
+  - "IT和OT两个团队的合作确实需要桥梁，我们做的就是这个桥"
+  - "TISAX认证不是额外的负担，而是拿到主机厂订单的通行证"

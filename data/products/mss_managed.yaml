@@ -1,0 +1,23 @@
+id: product_mss
+name: "MSS 安全托管服务"
+category: "managed_security"
+description: >
+  安全外包管家——把安全监控、告警分析、事件处理和应急响应全部交给专业安全团队，
+  7x24云端运营。特别适合IT人员少（1-5人）、门店/分支多（100+）的客户。
+  门店零部署、云端统一管理、按月/年付费。
+key_features:
+  - "7x24云端安全运营：专家团队全天候监控"
+  - "门店零部署：SaaS平台，无需本地安装"
+  - "平均7分钟事件响应：从小时级缩短至分钟级"
+  - "年均500+事件闭环：专业团队处理，IT团队减负90%"
+  - "按需付费：月度/年度服务订阅，无大额初始投入"
+applicable_industries:
+  - retail
+  - education
+  - healthcare
+  - government
+applicable_scenarios:
+  - ransomware
+  - data_leak
+  - apt
+  - compliance

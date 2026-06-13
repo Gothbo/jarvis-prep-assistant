@@ -1,0 +1,21 @@
+id: product_dlp
+name: "DLP 数据防泄露"
+category: "data_security"
+description: >
+  数据防盗门——对敏感数据（客户信息、财务数据、源代码等）进行分级标记，
+  监控数据的存储、传输和使用行为，发现违规操作时自动拦截并告警。
+  防止内部人员有意或无意的数据泄露。
+key_features:
+  - "数据分类分级：自动识别和标记敏感数据"
+  - "违规监控：邮件/网盘/USB/打印等通道全覆盖"
+  - "自动拦截：发现违规外传自动阻断"
+  - "审计追溯：数据流转全程可追溯"
+  - "策略灵活：按部门/角色/数据级别差异化管控"
+applicable_industries:
+  - finance
+  - healthcare
+  - education
+  - government
+applicable_scenarios:
+  - data_leak
+  - compliance

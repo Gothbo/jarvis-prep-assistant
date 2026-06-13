@@ -1,0 +1,23 @@
+id: product_log_audit
+name: "日志审计系统"
+category: "compliance_audit"
+description: >
+  系统监控摄像+录像机——对所有IT系统（服务器、网络设备、安全设备、数据库）的
+  操作日志进行集中采集、存储和分析。
+  合规强制要求（等保/网络安全法），安全事件追溯的基础设施。
+key_features:
+  - "全量日志采集：覆盖服务器/网络/安全/数据库"
+  - "合规必备：网络安全法+等保明确要求"
+  - "事件追溯：安全事件发生后可回放完整操作链"
+  - "安全取证：为事件调查提供法律级证据"
+  - "集中存储：满足6个月以上日志留存要求"
+applicable_industries:
+  - finance
+  - healthcare
+  - government
+  - education
+  - manufacturing
+applicable_scenarios:
+  - compliance
+  - data_leak
+  - apt

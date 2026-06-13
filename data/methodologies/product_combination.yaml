@@ -1,0 +1,51 @@
+id: product_combination
+name: "安全产品组合策略"
+description: >
+  XDR vs SOC/SIP 安全产品组合匹配指南。根据客户画像（团队规模、核心需求、预算、
+  合规压力、决策者关注点、行业特征）匹配三层方案：
+  (1)轻量实战型（XDR）——中小企业、1-3人安全团队、3-8万预算、勒索防护为主；
+  (2)合规宏观型（SIP/SOC）——中型国企/医院/政务云、3-8人团队、8-20万预算；
+  (3)精英全谱型（XDR+SIP/SOC）——大型银行/省级单位、8+人SOC团队、30万+预算。
+  核心原则："XDR解决'打得赢吗'，SOC解决'合不合规、管不管得住'。
+  小客户先要士兵（XDR），大客户士兵和指挥部都要（XDR+SOC）。"
+applicable_scenarios:
+  - ransomware
+  - apt
+  - compliance
+  - data_leak
+steps:
+  - order: 1
+    title: "30秒快速判断"
+    description: "通过6个维度快速确定客户适合哪层方案"
+    key_actions:
+      - "团队规模：1-3人→XDR | 3-8人→SIP/SOC | 8+人→XDR+SOC"
+      - "核心需求：防勒索→XDR | 合规审计→SIP/SOC | 全面对抗→XDR+SOC"
+      - "预算：3-8万→XDR | 8-20万→SIP/SOC | 30万+→XDR+SOC"
+  - order: 2
+    title: "XDR方案话术"
+    description: "面向轻量级客户的产品定位和销售话术"
+    key_actions:
+      - "定位：'全自动AI巡逻+狙击手'——自动检测+自动响应"
+      - "话术：'您3个人管全公司安全，不可能7x24盯着。XDR就是您的AI安全助手，24小时自动巡逻、发现异常自动隔离'"
+      - "关键纠偏：XDR不只是EDR+NDR，它提供原生数据关联和'秒级自动阻断'"
+  - order: 3
+    title: "SIP/SOC方案话术"
+    description: "面向合规驱动客户的产品定位和销售话术"
+    key_actions:
+      - "定位：'安全指挥部'——集中管理、合规审计、全局可见"
+      - "话术：'领导问安全做得怎么样，您需要一个量化的答案。SOC就是给您180天日志留存、可量化的安全指标、经得起审计的证据'"
+      - "关键纠偏：SIP/SOC是'噪音发生器'（收集所有日志），真正高精度降噪在XDR层"
+  - order: 4
+    title: "异议处理"
+    description: "产品组合相关的常见异议应对"
+    key_actions:
+      - "'已经有防火墙了'→'防火墙管网络层，XDR管终端和响应，SOC管全局可见和合规'"
+      - "'SOC太贵了'→'先从XDR开始，后续按需扩展SOC模块'"
+      - "'XDR和SOC有什么区别'→'XDR是一线特种部队，SOC是联合作战指挥部'"
+industry_match:
+  - finance
+  - healthcare
+  - manufacturing
+  - government
+  - education
+  - retail

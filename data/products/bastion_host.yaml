@@ -1,0 +1,23 @@
+id: product_bastion
+name: "堡垒机（运维审计）"
+category: "access_control"
+description: >
+  服务器访问登记+全程录像系统——谁在什么时间用什么账号登录了哪台服务器、
+  执行了什么操作，全部可记录、可回放、可审计。
+  满足等保合规要求，发生安全事件时可追溯责任。
+key_features:
+  - "权限控制：最小化运维权限，分角色分权"
+  - "操作审计：全程录像，支持回放和检索"
+  - "合规刚需：等保二级/三级必备项"
+  - "事后追溯：安全事件的运维操作回溯"
+  - "会话管理：实时监控和紧急切断"
+applicable_industries:
+  - finance
+  - healthcare
+  - government
+  - manufacturing
+  - education
+applicable_scenarios:
+  - compliance
+  - data_leak
+  - apt

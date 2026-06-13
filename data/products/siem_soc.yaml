@@ -1,0 +1,22 @@
+id: product_siem
+name: "SIEM/SOC 安全运营中心"
+category: "security_operations"
+description: >
+  安全指挥部——把所有安全设备的日志集中到一个平台，做关联分析、降噪、
+  事件响应和合规报告。把"每天3万条告警"变成"每天40条精准告警"。
+  让安全团队从"疲于应对告警"变成"聚焦真正威胁"。
+key_features:
+  - "告警降噪：关联分析，日均3万→40条高优先级告警"
+  - "集中管理：多厂商安全设备统一可见"
+  - "事件响应：从检测到响应的闭环工作流"
+  - "合规报告：等保/SOX/PCI-DSS等一键生成"
+  - "180天日志留存：满足监管审计要求"
+applicable_industries:
+  - finance
+  - government
+  - healthcare
+  - manufacturing
+applicable_scenarios:
+  - compliance
+  - apt
+  - data_leak
