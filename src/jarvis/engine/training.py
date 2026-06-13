@@ -24,10 +24,21 @@ PERSONALITY_MAP = {
 
 PERSONALITY_REVERSE = {v: k for k, v in PERSONALITY_MAP.items()}
 
+SCENARIO_LABELS = {
+    "compliance": "合规审计",
+    "data_leak": "数据安全",
+    "ransomware": "勒索防护",
+    "apt": "高级威胁防护",
+    "phishing": "钓鱼攻击防护",
+}
+
 INDUSTRY_LABELS = {
     "manufacturing": "制造业",
     "finance": "金融",
     "healthcare": "医疗",
+    "government": "政务",
+    "education": "教育",
+    "retail": "零售",
 }
 
 
@@ -200,8 +211,9 @@ def _rule_customer_reply(
 def generate_first_message(config: TrainingConfig, kb: KnowledgeBase) -> str:
     """Generate the customer's opening message."""
     industry_cn = INDUSTRY_LABELS.get(config.industry, config.industry)
+    scenario_cn = SCENARIO_LABELS.get(config.scenario, config.scenario)
     return (
-        f"你好，我是{industry_cn}行业负责{config.scenario}相关工作的。"
+        f"你好，我是{industry_cn}行业负责{scenario_cn}相关工作的。"
         f"我们最近遇到了一些安全方面的问题，想了解一下你们的解决方案。"
     )
 

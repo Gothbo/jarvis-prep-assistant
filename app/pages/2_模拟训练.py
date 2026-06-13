@@ -131,9 +131,12 @@ if phase == "config":
         industry_key = industry_options[selected_industry]
 
         scenario_map = {
-            "manufacturing": ["ransomware", "apt", "data_leak"],
-            "finance": ["compliance", "data_leak", "phishing"],
-            "healthcare": ["data_leak", "ransomware", "apt"],
+            "manufacturing": ["ransomware", "apt", "compliance"],
+            "finance": ["compliance", "data_leak", "ransomware", "apt"],
+            "healthcare": ["data_leak", "ransomware", "compliance"],
+            "government": ["compliance", "data_leak"],
+            "education": ["data_leak", "compliance"],
+            "retail": ["data_leak", "ransomware", "compliance"],
         }
         scenario_options = scenario_map.get(industry_key, ["ransomware"])
         scenario_labels = {

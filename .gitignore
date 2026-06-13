@@ -44,3 +44,8 @@ coverage.xml
 # Distribution
 *.tar.gz
 *.whl
+
+# Temp
+_jarvis_env.tmp
+_env.bat
+test_parse.bat
