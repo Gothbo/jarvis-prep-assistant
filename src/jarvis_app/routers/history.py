@@ -1,8 +1,8 @@
 """历史记录 API"""
+from typing import Literal
+
 from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import List, Optional, Literal
-from datetime import datetime
 
 router = APIRouter()
 
@@ -12,7 +12,7 @@ class HistoryItem(BaseModel):
     title: str
     date: str
     industry: str
-    score: Optional[int] = None
+    score: int | None = None
 
 HISTORY_DATA = [
     {"id":1,"type":"prep","title":"某金融机构移动安全方案","date":"2026-06-12","industry":"金融"},

@@ -1,22 +1,17 @@
 """知识库 API — 从 YAML 真实数据加载，全部中文输出"""
 
-import os
 import sys
 from pathlib import Path
+
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
-from typing import List, Optional
 
 # 确保 jarvis 模块可被找到
 SRC_DIR = Path(__file__).resolve().parent.parent.parent
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from jarvis.knowledge.loader import load_all, KnowledgeBase
-from jarvis.models.case import Case
-from jarvis.models.methodology import Methodology
-from jarvis.models.product import Product
-from jarvis.models.sensitivity import SensitivityProfile
+from jarvis.knowledge.loader import KnowledgeBase, load_all  # noqa: E402
 
 router = APIRouter()
 
@@ -40,7 +35,7 @@ SCENARIO_CN = {
 }
 
 # ── 缓存知识库实例 ──
-_kb_cache: Optional[KnowledgeBase] = None
+_kb_cache: KnowledgeBase | None = None
 
 def _get_kb() -> KnowledgeBase:
     global _kb_cache
@@ -67,41 +62,41 @@ class CaseItem(BaseModel):
     deep_pain: str
     solution_method: str
     solution_product: str
-    solution_phases: List[str]
-    sensitivity: List[str]
-    reference_event: Optional[str] = None
+    solution_phases: list[str]
+    sensitivity: list[str]
+    reference_event: str | None = None
 
 class MethodologyItem(BaseModel):
     id: str
     name: str
     description: str
-    applicable_scenarios_cn: List[str]
-    steps: List[dict]
-    industry_match_cn: List[str]
+    applicable_scenarios_cn: list[str]
+    steps: list[dict]
+    industry_match_cn: list[str]
 
 class SensitivityItem(BaseModel):
     id: str
     industry: str
     industry_cn: str
     primary_sensitivity: str
-    secondary_sensitivities: List[str]
-    landmines: List[str]
-    empathy_phrases: List[str]
+    secondary_sensitivities: list[str]
+    landmines: list[str]
+    empathy_phrases: list[str]
 
 class ProductItem(BaseModel):
     id: str
     name: str
     category: str
     description: str
-    key_features: List[str]
-    applicable_industries_cn: List[str]
-    applicable_scenarios_cn: List[str]
+    key_features: list[str]
+    applicable_industries_cn: list[str]
+    applicable_scenarios_cn: list[str]
 
 class KnowledgeResponse(BaseModel):
-    cases: List[CaseItem]
-    methodologies: List[MethodologyItem]
-    sensitivities: List[SensitivityItem]
-    products: List[ProductItem]
+    cases: list[CaseItem]
+    methodologies: list[MethodologyItem]
+    sensitivities: list[SensitivityItem]
+    products: list[ProductItem]
     total: int
 
 
@@ -109,8 +104,8 @@ class KnowledgeResponse(BaseModel):
 
 @router.get("/items", response_model=KnowledgeResponse)
 async def get_knowledge(
-    type: Optional[str] = Query(default=None, description="筛选类型: cases/methodologies/sensitivities/products"),
-    search: Optional[str] = Query(default=None, description="搜索关键词"),
+    type: str | None = Query(default=None, description="筛选类型: cases/methodologies/sensitivities/products"),
+    search: str | None = Query(default=None, description="搜索关键词"),
 ):
     """获取知识库全部条目，支持按类型筛选和搜索"""
     kb = _get_kb()
@@ -170,10 +165,14 @@ async def get_knowledge(
 
     # 按类型筛选
     if type and type != "all":
-        if type == "cases": methods_list, sens_list, products_list = [], [], []
-        elif type == "methodologies": cases_list, sens_list, products_list = [], [], []
-        elif type == "sensitivities": cases_list, methods_list, products_list = [], [], []
-        elif type == "products": cases_list, methods_list, sens_list = [], [], []
+        if type == "cases":
+            methods_list, sens_list, products_list = [], [], []
+        elif type == "methodologies":
+            cases_list, sens_list, products_list = [], [], []
+        elif type == "sensitivities":
+            cases_list, methods_list, products_list = [], [], []
+        elif type == "products":
+            cases_list, methods_list, sens_list = [], [], []
 
     # 搜索
     if search:

@@ -3,16 +3,16 @@
 import os
 import sys
 from pathlib import Path
+
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
-from typing import Optional
 
 # 确保 jarvis 模块可被找到
 SRC_DIR = Path(__file__).resolve().parent.parent.parent
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from jarvis.knowledge.loader import load_all
+from jarvis.knowledge.loader import load_all  # noqa: E402
 
 router = APIRouter()
 

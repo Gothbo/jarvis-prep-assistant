@@ -1,30 +1,27 @@
 """模拟训练 API — 接入真实训练引擎，支持 DeepSeek LLM 智能回复和打分"""
 
-import os
 import sys
 import uuid
 from pathlib import Path
+
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
-from typing import List, Optional, Literal
 
 # 确保 jarvis 模块可被找到
 SRC_DIR = Path(__file__).resolve().parent.parent.parent
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from jarvis.engine.training import (
-    TrainingConfig as EngineConfig,
-    ChatMessage,
-    TrainingResult,
+from jarvis.engine.training import (  # noqa: E402  # isort: skip
     PERSONALITY_MAP,
     PERSONALITY_REVERSE,
-    INDUSTRY_LABELS,
+    ChatMessage,
+    TrainingConfig as EngineConfig,
     generate_customer_reply,
     generate_first_message,
     score_conversation,
 )
-from jarvis.knowledge.loader import load_all, KnowledgeBase
+from jarvis.knowledge.loader import KnowledgeBase, load_all  # noqa: E402
 
 router = APIRouter()
 
@@ -65,7 +62,7 @@ INDUSTRY_SCENARIOS = {
 PERSONALITY_OPTIONS = PERSONALITY_MAP
 
 # ── 缓存 ──
-_kb_cache: Optional[KnowledgeBase] = None
+_kb_cache: KnowledgeBase | None = None
 
 def _get_kb() -> KnowledgeBase:
     global _kb_cache
@@ -108,7 +105,7 @@ class ScoreDimension(BaseModel):
     comment: str = ""
 
 class EndResponse(BaseModel):
-    scores: List[ScoreDimension]
+    scores: list[ScoreDimension]
     avg_score: int
     summary: str
     takeaway: str

@@ -1,24 +1,23 @@
 """智能售前准备 API"""
+import asyncio
+
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
-from typing import List, Optional
-import asyncio
-import random
 
 router = APIRouter()
 
 
 class SmartPrepRequest(BaseModel):
     scenario: str = Field(..., min_length=10, description="客户场景描述")
-    industry: Optional[str] = Field(default=None, description="行业（可选）")
+    industry: str | None = Field(default=None, description="行业（可选）")
 
 
 class SmartPrepResponse(BaseModel):
     industry: str
     scenario: str
     summary: str
-    key_points: List[str]
-    products: List[str]
+    key_points: list[str]
+    products: list[str]
     next_steps: str
 
 
@@ -27,7 +26,7 @@ async def generate_prep(request: SmartPrepRequest):
     """根据客户场景生成售前准备方案"""
     # 模拟生成延迟
     await asyncio.sleep(1.5)
-    
+
     return SmartPrepResponse(
         industry=request.industry or "金融",
         scenario=request.scenario[:30] + "..." if len(request.scenario) > 30 else request.scenario,

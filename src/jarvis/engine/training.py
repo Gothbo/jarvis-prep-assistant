@@ -4,9 +4,8 @@ import json
 import logging
 import os
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from jarvis.engine.intent import IntentResult
 from jarvis.knowledge.loader import KnowledgeBase
 
 logger = logging.getLogger(__name__)
