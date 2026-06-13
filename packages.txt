@@ -1,4 +1,2 @@
-# System-level dependencies for Streamlit Cloud
-# ChromaDB needs build tools for native extensions
-build-essential
-python3-dev
+# System-level dependencies for Streamlit Cloud (Debian/Ubuntu)
+# Currently no extra system packages needed (chromadb is optional)

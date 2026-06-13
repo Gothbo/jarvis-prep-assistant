@@ -2,9 +2,12 @@
 pydantic>=2.0,<3.0
 pyyaml>=6.0
 streamlit>=1.30
-chromadb>=0.4
 openai>=1.0
 jieba>=0.42
 httpx>=0.25
 plotly>=5.18
 python-dotenv>=1.0
+
+# Optional: chromadb (for vector search - falls back to keyword matching if not installed)
+# Uncomment the line below to enable semantic search locally:
+# chromadb>=0.4
