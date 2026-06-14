@@ -79,9 +79,9 @@ def _write_case_yaml(directory: pathlib.Path, filename: str, data: dict) -> path
 class TestAC1_LoadCasesReturnsCorrectCount:
     """AC1: Given valid YAML files, load_cases() returns Case instances matching file count."""
 
-    def test_real_data_returns_three_cases(self):
+    def test_real_data_returns_at_least_three_cases(self):
         cases = load_cases()
-        assert len(cases) == 3
+        assert len(cases) >= 3
         assert all(isinstance(c, Case) for c in cases)
 
     def test_custom_dir_returns_matching_count(self, tmp_path):

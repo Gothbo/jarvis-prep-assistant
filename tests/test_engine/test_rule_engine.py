@@ -125,7 +125,7 @@ class TestAC2_SixModulesFromYamlTemplates:
     def test_sensitivity_alerts_contain_primary(self, manufacturing_result):
         """The primary sensitivity from manufacturing_sens.yaml should appear."""
         alerts_text = " ".join(manufacturing_result.sensitivity_alerts)
-        assert "Production uptime" in alerts_text or "production" in alerts_text.lower()
+        assert "产线" in alerts_text or "production" in alerts_text.lower()
 
     def test_sensitivity_alerts_contain_landmines(self, manufacturing_result):
         """Landmines from manufacturing_sens.yaml should be included as alerts."""

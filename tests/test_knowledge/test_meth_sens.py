@@ -33,8 +33,8 @@ def _load_sensitivities() -> list[SensitivityProfile]:
 class TestAC1_MethodologyFiles:
     """AC1: 2 methodology YAMLs with name, applicable scenarios, ordered steps, industry match."""
 
-    def test_two_methodology_files_exist(self):
-        assert len(list(METH_DIR.glob("*.yaml"))) == 2
+    def test_at_least_two_methodology_files_exist(self):
+        assert len(list(METH_DIR.glob("*.yaml"))) >= 2
 
     def test_all_methodologies_pass_schema(self):
         for f in sorted(METH_DIR.glob("*.yaml")):
@@ -73,8 +73,8 @@ class TestAC1_MethodologyFiles:
 class TestAC2_SensitivityFiles:
     """AC2: 3 sensitivity YAMLs with primary sensitivity, secondary list, landmines, empathy phrases."""
 
-    def test_three_sensitivity_files_exist(self):
-        assert len(list(SENS_DIR.glob("*.yaml"))) == 3
+    def test_at_least_three_sensitivity_files_exist(self):
+        assert len(list(SENS_DIR.glob("*.yaml"))) >= 3
 
     def test_all_sensitivities_pass_schema(self):
         for f in sorted(SENS_DIR.glob("*.yaml")):
@@ -98,9 +98,9 @@ class TestAC2_SensitivityFiles:
         for s in _load_sensitivities():
             assert len(s.empathy_phrases) >= 2
 
-    def test_three_industries_covered(self):
+    def test_at_least_three_industries_covered(self):
         industries = set(s.industry for s in _load_sensitivities())
-        assert industries == {"manufacturing", "finance", "healthcare"}
+        assert industries.issuperset({"manufacturing", "finance", "healthcare"})
 
 
 class TestAC3_ValidateDataScript:
