@@ -1,10 +1,14 @@
 """Training Role-Play page — chat with an AI customer and get scored."""
 
-import os
+import math
 from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
+
+from jarvis.config import load_config
+
+load_config()
 
 # ---------------------------------------------------------------------------
 # Page config — MUST be first Streamlit call
@@ -16,26 +20,17 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
-# Bridge secrets → env (same pattern as Smart Prep page)
-# ---------------------------------------------------------------------------
-for _key in ["LLM_API_KEY", "LLM_BASE_URL", "LLM_MODEL", "LLM_TIMEOUT"]:
-    if _key not in os.environ:
-        try:
-            val = st.secrets[_key]
-            if val:
-                os.environ[_key] = str(val)
-        except (KeyError, FileNotFoundError):
-            pass
-
-# ---------------------------------------------------------------------------
 # Imports
 # ---------------------------------------------------------------------------
 try:
     from jarvis.engine.training import (
         INDUSTRY_LABELS,
+        INDUSTRY_SCENARIOS,
         PERSONALITY_MAP,
         PERSONALITY_REVERSE,
+        SCENARIO_LABELS,
         ChatMessage,
+        ScoreDimension,
         TrainingConfig,
         generate_customer_reply,
         generate_first_message,
@@ -49,23 +44,156 @@ except Exception as _import_err:
     _IMPORTS_OK = False
     _IMPORT_ERROR = _import_err
 
+
+# ---------------------------------------------------------------------------
+# Radar chart helper (pure SVG, no external library needed)
+# ---------------------------------------------------------------------------
+def _render_radar_svg(scores: list, size: int = 260) -> str:
+    """Generate an SVG radar chart from score dimensions."""
+    cx, cy = size // 2, size // 2
+    radius = size // 2 - 40
+    n = len(scores)
+    if n < 3:
+        return ""
+
+    def _point(angle_offset: float, r: float) -> tuple[float, float]:
+        angle = (2 * math.pi / n) * angle_offset - math.pi / 2
+        return cx + r * math.cos(angle), cy + r * math.sin(angle)
+
+    # Grid rings (20%, 40%, 60%, 80%, 100%)
+    grid_lines = ""
+    for pct in [0.2, 0.4, 0.6, 0.8, 1.0]:
+        pts = " ".join(
+            f"{_point(i, radius * pct)[0]:.1f},{_point(i, radius * pct)[1]:.1f}"
+            for i in range(n)
+        )
+        grid_lines += f'<polygon points="{pts}" fill="none" stroke="#e2e8f0" stroke-width="1"/>'
+
+    # Axis lines
+    axis_lines = ""
+    for i in range(n):
+        px, py = _point(i, radius)
+        axis_lines += f'<line x1="{cx}" y1="{cy}" x2="{px:.1f}" y2="{py:.1f}" stroke="#e2e8f0" stroke-width="1"/>'
+
+    # Data polygon
+    data_pts = " ".join(
+        f"{_point(i, radius * s.score / 100)[0]:.1f},{_point(i, radius * s.score / 100)[1]:.1f}"
+        for i, s in enumerate(scores)
+    )
+    data_polygon = (
+        f'<polygon points="{data_pts}" fill="rgba(99,102,241,0.15)" '
+        f'stroke="#6366f1" stroke-width="2.5"/>'
+    )
+
+    # Data dots
+    dots = ""
+    for i, s in enumerate(scores):
+        dx, dy = _point(i, radius * s.score / 100)
+        dots += f'<circle cx="{dx:.1f}" cy="{dy:.1f}" r="4" fill="{s.color}" stroke="white" stroke-width="2"/>'
+
+    # Labels
+    labels = ""
+    for i, s in enumerate(scores):
+        lx, ly = _point(i, radius + 24)
+        anchor = "middle"
+        if lx < cx - 10:
+            anchor = "end"
+        elif lx > cx + 10:
+            anchor = "start"
+        labels += (
+            f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" '
+            f'font-size="11" font-weight="500" fill="#475569">{s.label}</text>'
+        )
+        # Score value below label
+        labels += (
+            f'<text x="{lx:.1f}" y="{ly + 14:.1f}" text-anchor="{anchor}" '
+            f'font-size="12" font-weight="700" fill="{s.color}">{s.score}</text>'
+        )
+
+    return (
+        f'<svg viewBox="0 0 {size} {size}" width="{size}" height="{size}" '
+        f'xmlns="http://www.w3.org/2000/svg">'
+        f'{grid_lines}{axis_lines}{data_polygon}{dots}{labels}</svg>'
+    )
+
+
+# ---------------------------------------------------------------------------
+# Chat bubble rendering helper
+# ---------------------------------------------------------------------------
+def _render_chat_bubble(role: str, content: str, timestamp: str = "") -> str:
+    """Render a styled chat bubble with avatar and optional timestamp."""
+    ts_html = ""
+    if timestamp:
+        if role == "customer":
+            ts_html = f'<div class="chat-time">{timestamp}</div>'
+        else:
+            ts_html = f'<div class="chat-time chat-time-right">{timestamp}</div>'
+
+    if role == "customer":
+        return (
+            f'<div class="chat-msg chat-msg-left">'
+            f'<div class="avatar avatar-customer">C</div>'
+            f'<div class="bubble-wrap bubble-left">'
+            f'<div class="chat-bubble chat-customer">{content}</div>'
+            f'{ts_html}'
+            f'</div></div>'
+        )
+    return (
+        f'<div class="chat-msg chat-msg-right">'
+        f'<div class="avatar avatar-user">S</div>'
+        f'<div class="bubble-wrap bubble-right">'
+        f'<div class="chat-bubble chat-user">{content}</div>'
+        f'{ts_html}'
+        f'</div></div>'
+    )
+
+
 # ---------------------------------------------------------------------------
 # Custom CSS
 # ---------------------------------------------------------------------------
 st.markdown("""
 <style>
+/* -- Chat messages -- */
+.chat-msg {
+    display: flex; gap: 12px; margin-bottom: 18px;
+    animation: fadeSlideIn 0.35s ease-out;
+}
+.chat-msg-right { flex-direction: row-reverse; }
+.avatar {
+    width: 38px; height: 38px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.avatar-customer {
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    color: #4338ca;
+}
+.avatar-user {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: white;
+}
+.bubble-wrap { max-width: 75%; }
+.bubble-left { margin-right: auto; }
+.bubble-right { margin-left: auto; }
 .chat-bubble {
-    padding: 14px 18px; border-radius: 14px; font-size: 14px;
-    line-height: 1.7; margin-bottom: 8px; max-width: 85%;
+    padding: 14px 18px; border-radius: 16px; font-size: 14px;
+    line-height: 1.7; word-wrap: break-word;
 }
 .chat-customer {
-    background: #f0f2f6; border: 1px solid #e0e0e0;
+    background: #f8fafc; border: 1px solid #e2e8f0;
     border-bottom-left-radius: 4px;
 }
 .chat-user {
-    background: #6366f1; color: white;
-    border-bottom-right-radius: 4px; margin-left: auto;
+    background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+    color: white; border-bottom-right-radius: 4px;
 }
+.chat-time {
+    font-size: 11px; color: #94a3b8; margin-top: 4px; padding-left: 4px;
+}
+.chat-time-right { text-align: right; padding-right: 4px; }
+
+/* -- Score bars -- */
 .score-bar-wrap {
     display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
 }
@@ -74,11 +202,33 @@ st.markdown("""
     flex: 1; height: 8px; background: #f1f5f9;
     border-radius: 4px; overflow: hidden;
 }
-.score-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.score-fill {
+    height: 100%; border-radius: 4px;
+    animation: barGrow 0.8s ease-out;
+}
 .score-val { font-size: 14px; font-weight: 600; width: 30px; text-align: right; }
+
+/* -- Boxes -- */
 .warning-box {
     background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3);
     border-radius: 12px; padding: 16px 20px; color: #92400e;
+}
+.score-card {
+    background: white; border: 1px solid #e2e8f0; border-radius: 16px;
+    padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* -- Animations -- */
+@keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes barGrow {
+    from { width: 0 !important; }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -208,7 +358,7 @@ if phase == "config":
         selected_industry = industry_labels.index(selected_industry_label)
         industry_key = industry_options[selected_industry]
 
-        scenario_map = {
+        scenario_map = INDUSTRY_SCENARIOS or {
             "manufacturing": ["ransomware", "apt", "compliance"],
             "finance": ["compliance", "data_leak", "ransomware", "apt"],
             "healthcare": ["data_leak", "ransomware", "compliance"],
@@ -217,14 +367,7 @@ if phase == "config":
             "retail": ["data_leak", "ransomware", "compliance"],
         }
         scenario_options = scenario_map.get(industry_key, ["ransomware"])
-        scenario_labels = {
-            "ransomware": "勒索软件",
-            "apt": "高级威胁",
-            "data_leak": "数据泄露",
-            "compliance": "合规审计",
-            "phishing": "钓鱼攻击",
-        }
-        scenario_display = [scenario_labels.get(s, s) for s in scenario_options]
+        scenario_display = [SCENARIO_LABELS.get(s, s) for s in scenario_options]
         selected_scenario_label = st.selectbox(
             "业务场景", scenario_display, key="train_scen_sel"
         )
@@ -337,30 +480,14 @@ elif phase == "chatting":
     st.divider()
 
     # Chat messages
-    for m in msgs:
-        if m.role == "customer":
-            st.markdown(
-                f'<div style="display:flex;gap:10px;margin-bottom:14px;">'
-                f'<div style="width:34px;height:34px;border-radius:11px;'
-                f'background:#e0e7ff;display:flex;align-items:center;'
-                f'justify-content:center;font-size:13px;font-weight:600;'
-                f'flex-shrink:0;">客</div>'
-                f'<div class="chat-bubble chat-customer">{m.content}</div>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
-        else:
-            st.markdown(
-                f'<div style="display:flex;gap:10px;margin-bottom:14px;'
-                f'flex-direction:row-reverse;">'
-                f'<div style="width:34px;height:34px;border-radius:11px;'
-                f'background:#1e293b;color:white;display:flex;align-items:center;'
-                f'justify-content:center;font-size:13px;font-weight:600;'
-                f'flex-shrink:0;">我</div>'
-                f'<div class="chat-bubble chat-user">{m.content}</div>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
+    now = datetime.now()
+    for idx, m in enumerate(msgs):
+        # Generate a pseudo-timestamp based on message index
+        ts = now.strftime("%H:%M")
+        st.markdown(
+            _render_chat_bubble(m.role, m.content, ts),
+            unsafe_allow_html=True,
+        )
 
     st.divider()
 
@@ -412,10 +539,19 @@ elif phase == "scored":
     st.markdown("基于本次对话的 AI 综合评估")
     st.divider()
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([3, 2])
 
     with col1:
         st.markdown("### 五维评分")
+
+        # Radar chart
+        radar_svg = _render_radar_svg(result.scores)
+        st.markdown(
+            f'<div style="display:flex;justify-content:center;padding:10px 0 20px;">'
+            f'{radar_svg}</div>',
+            unsafe_allow_html=True,
+        )
+
         for s in result.scores:
             st.markdown(
                 f'<div class="score-bar-wrap">'
@@ -520,31 +656,17 @@ elif phase == "review":
     for m in _review_msgs:
         _role = m["role"]
         _content = m["content"]
-        if _role == "customer":
-            st.markdown(
-                f'<div style="display:flex;gap:10px;margin-bottom:14px;">'
-                f'<div style="width:34px;height:34px;border-radius:11px;'
-                f'background:#e0e7ff;display:flex;align-items:center;'
-                f'justify-content:center;font-size:13px;font-weight:600;'
-                f'flex-shrink:0;">客</div>'
-                f'<div class="chat-bubble chat-customer">{_content}</div>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
+        _ts = m.get("timestamp", "")
+        if _ts and len(_ts) >= 16:
+            _ts = _ts[11:16]  # Extract HH:MM from ISO timestamp
         else:
-            st.markdown(
-                f'<div style="display:flex;gap:10px;margin-bottom:14px;'
-                f'flex-direction:row-reverse;">'
-                f'<div style="width:34px;height:34px;border-radius:11px;'
-                f'background:#1e293b;color:white;display:flex;align-items:center;'
-                f'justify-content:center;font-size:13px;font-weight:600;'
-                f'flex-shrink:0;">我</div>'
-                f'<div class="chat-bubble chat-user">{_content}</div>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
+            _ts = ""
+        st.markdown(
+            _render_chat_bubble(_role, _content, _ts),
+            unsafe_allow_html=True,
+        )
 
-    # ---- score bars ----
+    # ---- score bars + radar ----
     if _review_scores:
         st.divider()
         st.markdown("### 评分详情")
@@ -556,6 +678,23 @@ elif phase == "review":
             "solution": ("方案呈现", "#10b981"),
             "closing": ("收尾能力", "#ef4444"),
         }
+
+        # Build a lightweight score object for the radar chart
+        _radar_scores = []
+        for sc in _review_scores:
+            _dim = sc["dimension"]
+            _lbl_info = _dim_labels.get(_dim, (_dim, "#94a3b8"))
+            _radar_scores.append(
+                ScoreDimension(key=_dim, label=_lbl_info[0], score=sc["score"], color=_lbl_info[1])
+            )
+        if _radar_scores:
+            radar_svg = _render_radar_svg(_radar_scores)
+            st.markdown(
+                f'<div style="display:flex;justify-content:center;padding:10px 0 20px;">'
+                f'{radar_svg}</div>',
+                unsafe_allow_html=True,
+            )
+
         for sc in _review_scores:
             _dim = sc["dimension"]
             _sc_score = sc["score"]

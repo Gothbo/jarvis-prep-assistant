@@ -2,11 +2,18 @@
 
 import streamlit as st
 
+from jarvis.auth import password_gate
+from jarvis.config import load_config
+
+load_config()
+
 st.set_page_config(
     page_title="JARVIS - 智能 Prep 助手",
     page_icon="🛡️",
     layout="wide",
 )
+
+password_gate()
 
 # ---------------------------------------------------------------------------
 # Custom CSS

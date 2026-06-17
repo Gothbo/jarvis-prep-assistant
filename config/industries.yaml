@@ -1,0 +1,33 @@
+# JARVIS Industry & Scenario Configuration
+# This is the single source of truth for all industry labels,
+# scenario mappings, and personality types.
+
+industries:
+  manufacturing: "制造业"
+  finance: "金融"
+  healthcare: "医疗"
+  government: "政务"
+  education: "教育"
+  retail: "零售"
+
+scenarios:
+  compliance: "合规审计"
+  data_leak: "数据安全"
+  ransomware: "勒索防护"
+  apt: "高级威胁防护"
+  phishing: "钓鱼攻击防护"
+
+# Which scenarios are available for each industry
+industry_scenarios:
+  manufacturing: [ransomware, apt, compliance]
+  finance: [compliance, data_leak, ransomware, apt]
+  healthcare: [data_leak, ransomware, compliance]
+  government: [compliance, data_leak]
+  education: [data_leak, compliance]
+  retail: [data_leak, ransomware, compliance]
+
+personalities:
+  skeptical: "怀疑型"
+  budget_conscious: "预算敏感型"
+  technical_expert: "技术专家型"
+  friendly: "友好型"

@@ -9,15 +9,22 @@ from dataclasses import dataclass
 import httpx
 from openai import APIError, APITimeoutError
 
+from jarvis.industry_config import (
+    get_industry_labels,
+    get_industry_scenarios,
+    get_personality_map,
+    get_scenario_labels,
+)
 from jarvis.knowledge.loader import KnowledgeBase
 
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Data classes
+# Data classes — loaded from config/industries.yaml with hardcoded fallback
 # ---------------------------------------------------------------------------
 
-PERSONALITY_MAP = {
+_cfg_personalities = get_personality_map()
+PERSONALITY_MAP = _cfg_personalities if _cfg_personalities else {
     "skeptical": "怀疑型",
     "budget_conscious": "预算敏感型",
     "technical_expert": "技术专家型",
@@ -26,7 +33,8 @@ PERSONALITY_MAP = {
 
 PERSONALITY_REVERSE = {v: k for k, v in PERSONALITY_MAP.items()}
 
-SCENARIO_LABELS = {
+_cfg_scenarios = get_scenario_labels()
+SCENARIO_LABELS = _cfg_scenarios if _cfg_scenarios else {
     "compliance": "合规审计",
     "data_leak": "数据安全",
     "ransomware": "勒索防护",
@@ -34,7 +42,8 @@ SCENARIO_LABELS = {
     "phishing": "钓鱼攻击防护",
 }
 
-INDUSTRY_LABELS = {
+_cfg_industries = get_industry_labels()
+INDUSTRY_LABELS = _cfg_industries if _cfg_industries else {
     "manufacturing": "制造业",
     "finance": "金融",
     "healthcare": "医疗",
@@ -42,6 +51,9 @@ INDUSTRY_LABELS = {
     "education": "教育",
     "retail": "零售",
 }
+
+# Expose industry-scenario mapping for pages
+INDUSTRY_SCENARIOS = get_industry_scenarios()
 
 
 @dataclass

@@ -1,4 +1,4 @@
-"""Knowledge Base browsing page — explore cases, methodologies, sensitivities, products."""
+"""Knowledge Base browsing page -- explore cases, methodologies, sensitivities, products."""
 
 import streamlit as st
 
@@ -6,7 +6,9 @@ import streamlit as st
 # Imports
 # ---------------------------------------------------------------------------
 try:
+    from jarvis.engine.training import INDUSTRY_LABELS
     from jarvis.knowledge.loader import KnowledgeBase, load_all
+    from jarvis.search.fulltext import SearchResult, search_knowledge_base
 
     _IMPORTS_OK = True
 except Exception as _import_err:
@@ -40,6 +42,13 @@ st.markdown("""
     display: inline-block; padding: 2px 10px; border-radius: 7px;
     font-size: 11px; font-weight: 500; margin-bottom: 8px;
 }
+.search-result-card {
+    background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 16px 20px; margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-result-card:hover { border-color: #6366f1; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -84,136 +93,246 @@ except Exception as e:
     st.stop()
 
 # ---------------------------------------------------------------------------
-# Tabs
+# Unified search section
 # ---------------------------------------------------------------------------
-tab_cases, tab_methods, tab_sens, tab_products = st.tabs(
-    ["案例研究", "方法论", "行业敏感度", "产品"]
-)
+_TYPE_LABELS: dict[str, str] = {
+    "cases": "案例",
+    "methodologies": "方法论",
+    "sensitivities": "敏感度",
+    "products": "产品",
+}
 
-# ── Cases ──────────────────────────────────────────────────────────────────
-with tab_cases:
-    search_case = st.text_input(
-        "搜索案例", placeholder="输入关键词...", key="search_case",
+_TYPE_TAG_COLORS: dict[str, tuple[str, str]] = {
+    "cases": ("#e0e7ff", "#4338ca"),
+    "methodologies": ("#fef3c7", "#92400e"),
+    "sensitivities": ("#fce7f3", "#9d174d"),
+    "products": ("#d1fae5", "#065f46"),
+}
+
+with st.container():
+    search_query = st.text_input(
+        "全局搜索",
+        placeholder="输入关键词搜索全部知识库...",
+        key="kb_global_search",
         label_visibility="collapsed",
     )
 
-    total = len(kb.cases)
-    cases = kb.cases
-    if search_case:
-        sl = search_case.lower()
-        cases = [
-            c for c in cases
-            if sl in c.id.lower()
-            or sl in c.industry.lower()
-            or sl in c.scenario.lower()
-            or sl in c.pain_points.surface.lower()
-            or sl in c.pain_points.deep.lower()
-        ]
+    col_cat, col_ind, _spacer = st.columns([1, 1, 3])
+    with col_cat:
+        cat_opt = st.selectbox(
+            "类型",
+            ["全部", "案例", "方法论", "敏感度", "产品"],
+            key="kb_search_cat",
+        )
+    with col_ind:
+        ind_opt = st.selectbox(
+            "行业",
+            ["全部", *INDUSTRY_LABELS.values()],
+            key="kb_search_ind",
+        )
 
-    st.caption(f"共 {len(cases)} / {total} 条案例")
+    _CAT_MAP: dict[str, str | None] = {
+        "全部": None,
+        "案例": "cases",
+        "方法论": "methodologies",
+        "敏感度": "sensitivities",
+        "产品": "products",
+    }
+    _IND_MAP: dict[str, str | None] = {
+        "全部": None,
+        **{v: k for k, v in INDUSTRY_LABELS.items()},
+    }
 
-    for case in cases:
-        tag_bg = "#e0e7ff" if case.industry == "finance" else ("#d1fae5" if case.industry == "healthcare" else "#fef3c7")
-        tag_fg = "#4338ca" if case.industry == "finance" else ("#065f46" if case.industry == "healthcare" else "#92400e")
+    search_category = _CAT_MAP.get(cat_opt)
+    search_industry = _IND_MAP.get(ind_opt)
 
-        with st.expander(f"**{case.id}** — {case.industry} / {case.scenario}", expanded=False):
-            st.markdown(f"""
+    # Execute search
+    search_results: list[SearchResult] = []
+    if search_query:
+        search_results = search_knowledge_base(
+            kb,
+            search_query,
+            category=search_category,
+            industry=search_industry,
+        )
+
+show_search = bool(search_query)
+
+# ---------------------------------------------------------------------------
+# Search results view
+# ---------------------------------------------------------------------------
+if show_search:
+    st.markdown(f"### 搜索结果 ({len(search_results)} 条)")
+
+    if not search_results:
+        st.warning("未找到匹配的内容，请尝试其他关键词或调整筛选条件。")
+    else:
+        for result in search_results:
+            tag_bg, tag_fg = _TYPE_TAG_COLORS.get(result.type, ("#f1f5f9", "#475569"))
+            type_label = _TYPE_LABELS.get(result.type, result.type)
+
+            with st.expander(result.title, expanded=False):
+                st.markdown(
+                    f'<span class="kb-tag" style="background:{tag_bg};color:{tag_fg};">'
+                    f"{type_label}</span>",
+                    unsafe_allow_html=True,
+                )
+                st.markdown(result.snippet, unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
+# Tab browsing view (when no search is active)
+# ---------------------------------------------------------------------------
+else:
+    tab_cases, tab_methods, tab_sens, tab_products = st.tabs(
+        ["案例研究", "方法论", "行业敏感度", "产品"]
+    )
+
+    # -- Cases ---------------------------------------------------------------
+    with tab_cases:
+        search_case = st.text_input(
+            "搜索案例", placeholder="输入关键词...", key="search_case",
+            label_visibility="collapsed",
+        )
+
+        total = len(kb.cases)
+        cases = kb.cases
+        if search_case:
+            sl = search_case.lower()
+            cases = [
+                c for c in cases
+                if sl in c.id.lower()
+                or sl in c.industry.lower()
+                or sl in c.scenario.lower()
+                or sl in c.pain_points.surface.lower()
+                or sl in c.pain_points.deep.lower()
+            ]
+
+        st.caption(f"共 {len(cases)} / {total} 条案例")
+
+        for case in cases:
+            tag_bg = (
+                "#e0e7ff" if case.industry == "finance"
+                else ("#d1fae5" if case.industry == "healthcare" else "#fef3c7")
+            )
+            tag_fg = (
+                "#4338ca" if case.industry == "finance"
+                else ("#065f46" if case.industry == "healthcare" else "#92400e")
+            )
+
+            with st.expander(
+                f"**{case.id}** -- {case.industry} / {case.scenario}", expanded=False,
+            ):
+                st.markdown(f"""
 <span class="kb-tag" style="background:{tag_bg};color:{tag_fg};">{case.industry}</span>
 <span class="kb-tag" style="background:#f1f5f9;color:#475569;margin-left:4px;">{case.scenario}</span>
 """, unsafe_allow_html=True)
 
-            st.markdown("**表面痛点**")
-            st.markdown(case.pain_points.surface)
+                st.markdown("**表面痛点**")
+                st.markdown(case.pain_points.surface)
 
-            st.markdown("**深层痛点**")
-            st.markdown(case.pain_points.deep)
+                st.markdown("**深层痛点**")
+                st.markdown(case.pain_points.deep)
 
-            st.markdown("**解决方案**")
-            st.markdown(f"- 方法: {case.solution.method}")
-            st.markdown(f"- 产品: {case.solution.product}")
-            for i, phase in enumerate(case.solution.phases, 1):
-                st.markdown(f"- 阶段 {i}: {phase}")
+                st.markdown("**解决方案**")
+                st.markdown(f"- 方法: {case.solution.method}")
+                st.markdown(f"- 产品: {case.solution.product}")
+                for i, phase in enumerate(case.solution.phases, 1):
+                    st.markdown(f"- 阶段 {i}: {phase}")
 
-            st.markdown("**话术要点**")
-            st.markdown(f"- 开场: {case.talking_points.opening}")
-            st.markdown(f"- 共情: {case.talking_points.empathy}")
-            st.markdown(f"- 锚定: {case.talking_points.anchoring}")
+                st.markdown("**话术要点**")
+                st.markdown(f"- 开场: {case.talking_points.opening}")
+                st.markdown(f"- 共情: {case.talking_points.empathy}")
+                st.markdown(f"- 锚定: {case.talking_points.anchoring}")
 
-            st.markdown("**追问清单**")
-            for q in case.follow_up_questions:
-                st.markdown(f"- [{q.dimension}] {q.question}")
+                st.markdown("**追问清单**")
+                for q in case.follow_up_questions:
+                    st.markdown(f"- [{q.dimension}] {q.question}")
 
-            if case.reference_event:
-                st.markdown("**参考事件**")
-                st.info(case.reference_event)
+                if case.reference_event:
+                    st.markdown("**参考事件**")
+                    st.info(case.reference_event)
 
-# ── Methodologies ──────────────────────────────────────────────────────────
-with tab_methods:
-    st.caption(f"共 {len(kb.methodologies)} 个方法论")
+    # -- Methodologies -------------------------------------------------------
+    with tab_methods:
+        st.caption(f"共 {len(kb.methodologies)} 个方法论")
 
-    for method in kb.methodologies:
-        with st.expander(f"**{method.name}** — {method.description}", expanded=False):
-            scenarios = ", ".join(method.applicable_scenarios)
-            industries = ", ".join(method.industry_match) if method.industry_match else "通用"
-            st.markdown(f"- 适用场景: {scenarios}")
-            st.markdown(f"- 适用行业: {industries}")
+        for method in kb.methodologies:
+            with st.expander(
+                f"**{method.name}** -- {method.description}", expanded=False,
+            ):
+                scenarios = ", ".join(method.applicable_scenarios)
+                industries = (
+                    ", ".join(method.industry_match) if method.industry_match else "通用"
+                )
+                st.markdown(f"- 适用场景: {scenarios}")
+                st.markdown(f"- 适用行业: {industries}")
 
-            st.markdown("**步骤**")
-            for step in method.steps:
-                st.markdown(f"**{step.order}. {step.title}** — {step.description}")
-                for action in step.key_actions:
-                    st.markdown(f"  - {action}")
+                st.markdown("**步骤**")
+                for step in method.steps:
+                    st.markdown(f"**{step.order}. {step.title}** -- {step.description}")
+                    for action in step.key_actions:
+                        st.markdown(f"  - {action}")
 
-# ── Sensitivities ──────────────────────────────────────────────────────────
-with tab_sens:
-    search_sens = st.text_input(
-        "搜索敏感度", placeholder="输入行业...", key="search_sens",
-        label_visibility="collapsed",
-    )
+    # -- Sensitivities -------------------------------------------------------
+    with tab_sens:
+        search_sens = st.text_input(
+            "搜索敏感度", placeholder="输入行业...", key="search_sens",
+            label_visibility="collapsed",
+        )
 
-    sensitivities = kb.sensitivities
-    if search_sens:
-        sl = search_sens.lower()
-        sensitivities = [
-            s for s in sensitivities
-            if sl in s.industry.lower()
-            or sl in s.primary_sensitivity.lower()
-        ]
+        sensitivities = kb.sensitivities
+        if search_sens:
+            sl = search_sens.lower()
+            sensitivities = [
+                s for s in sensitivities
+                if sl in s.industry.lower()
+                or sl in s.primary_sensitivity.lower()
+            ]
 
-    st.caption(f"共 {len(sensitivities)} 个行业敏感度规则")
+        st.caption(f"共 {len(sensitivities)} 个行业敏感度规则")
 
-    for sens in sensitivities:
-        with st.expander(f"**{sens.industry}** — {sens.primary_sensitivity}", expanded=False):
-            st.markdown(f"**主要敏感度**: {sens.primary_sensitivity}")
+        for sens in sensitivities:
+            with st.expander(
+                f"**{sens.industry}** -- {sens.primary_sensitivity}", expanded=False,
+            ):
+                st.markdown(f"**主要敏感度**: {sens.primary_sensitivity}")
 
-            if sens.secondary_sensitivities:
-                st.markdown("**次要敏感度**")
-                for s in sens.secondary_sensitivities:
-                    st.markdown(f"- {s}")
+                if sens.secondary_sensitivities:
+                    st.markdown("**次要敏感度**")
+                    for s in sens.secondary_sensitivities:
+                        st.markdown(f"- {s}")
 
-            st.markdown("**雷区（绝对避免）**")
-            for lm in sens.landmines:
-                st.markdown(f"- {lm}")
+                st.markdown("**雷区（绝对避免）**")
+                for lm in sens.landmines:
+                    st.markdown(f"- {lm}")
 
-            if sens.empathy_phrases:
-                st.markdown("**共情话术**")
-                for ep in sens.empathy_phrases:
-                    st.markdown(f"> {ep}")
+                if sens.empathy_phrases:
+                    st.markdown("**共情话术**")
+                    for ep in sens.empathy_phrases:
+                        st.markdown(f"> {ep}")
 
-# ── Products ───────────────────────────────────────────────────────────────
-with tab_products:
-    st.caption(f"共 {len(kb.products)} 个产品")
+    # -- Products ------------------------------------------------------------
+    with tab_products:
+        st.caption(f"共 {len(kb.products)} 个产品")
 
-    for prod in kb.products:
-        with st.expander(f"**{prod.name}** — {prod.category}", expanded=False):
-            st.markdown(prod.description)
+        for prod in kb.products:
+            with st.expander(f"**{prod.name}** -- {prod.category}", expanded=False):
+                st.markdown(prod.description)
 
-            if prod.key_features:
-                st.markdown("**核心特性**")
-                for f in prod.key_features:
-                    st.markdown(f"- {f}")
+                if prod.key_features:
+                    st.markdown("**核心特性**")
+                    for f in prod.key_features:
+                        st.markdown(f"- {f}")
 
-            industries = ", ".join(prod.applicable_industries) if prod.applicable_industries else "通用"
-            scenarios = ", ".join(prod.applicable_scenarios) if prod.applicable_scenarios else "通用"
-            st.markdown(f"- 适用行业: {industries}")
-            st.markdown(f"- 适用场景: {scenarios}")
+                industries = (
+                    ", ".join(prod.applicable_industries)
+                    if prod.applicable_industries
+                    else "通用"
+                )
+                scenarios = (
+                    ", ".join(prod.applicable_scenarios)
+                    if prod.applicable_scenarios
+                    else "通用"
+                )
+                st.markdown(f"- 适用行业: {industries}")
+                st.markdown(f"- 适用场景: {scenarios}")

@@ -49,3 +49,6 @@ coverage.xml
 _jarvis_env.tmp
 _env.bat
 test_parse.bat
+
+# Docker
+docker-compose.override.yml
