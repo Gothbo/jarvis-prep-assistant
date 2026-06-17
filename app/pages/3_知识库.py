@@ -6,7 +6,7 @@ import streamlit as st
 # Imports
 # ---------------------------------------------------------------------------
 try:
-    from jarvis.knowledge.loader import load_all, KnowledgeBase
+    from jarvis.knowledge.loader import KnowledgeBase, load_all
 
     _IMPORTS_OK = True
 except Exception as _import_err:

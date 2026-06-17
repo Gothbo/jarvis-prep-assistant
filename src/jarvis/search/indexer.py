@@ -52,6 +52,9 @@ def build_index(kb: KnowledgeBase, persist_dir: Path | None = None) -> bool:
         logger.info("Indexed %d cases into ChromaDB", len(kb.cases))
         return True
 
-    except Exception as e:
+    except (RuntimeError, ValueError, OSError) as e:
         logger.error("Failed to build vector index: %s", e)
+        return False
+    except Exception:
+        logger.exception("Unexpected error building vector index")
         return False

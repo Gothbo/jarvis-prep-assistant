@@ -67,8 +67,11 @@ def semantic_search(
 
         return search_results
 
-    except Exception as e:
+    except (RuntimeError, ValueError, OSError) as e:
         logger.warning("Vector search failed: %s, using keyword fallback", e)
+        return keyword_fallback(query, kb)
+    except Exception:
+        logger.exception("Unexpected error in semantic search")
         return keyword_fallback(query, kb)
 
 

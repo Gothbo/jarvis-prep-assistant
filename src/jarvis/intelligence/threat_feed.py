@@ -84,7 +84,11 @@ def _read_cache(industry: str) -> list[ThreatEvent] | None:
             return None
 
         return [ThreatEvent(**e) for e in data.get("events", [])]
+    except (OSError, json.JSONDecodeError, KeyError, TypeError) as e:
+        logger.debug("Cache read failed for %s: %s", industry, e)
+        return None
     except Exception:
+        logger.exception("Unexpected error reading cache for %s", industry)
         return None
 
 
@@ -120,8 +124,10 @@ def fetch_threats(industry: str | None) -> list[ThreatEvent]:
         if events:
             _write_cache(industry, events)
             return events
-    except Exception as e:
+    except (httpx.HTTPError, httpx.TimeoutException, TimeoutError, OSError) as e:
         logger.warning("Threat intel API failed: %s", e)
+    except Exception:
+        logger.exception("Unexpected error fetching threat intel for %s", industry)
 
     # Fallback to sample data
     samples = SAMPLE_THREATS.get(industry, [])
@@ -144,8 +150,11 @@ def _fetch_from_api(industry: str, api_key: str) -> list[ThreatEvent]:
         if api_key:
             return _fetch_otx(industry, api_key, terms)
         return _fetch_public(industry, terms)
-    except Exception as e:
+    except (httpx.HTTPError, httpx.TimeoutException, TimeoutError) as e:
         logger.debug("_fetch_from_api failed for %s: %s", industry, e)
+        return []
+    except Exception:
+        logger.exception("Unexpected error in _fetch_from_api for %s", industry)
         return []
 
 
@@ -187,8 +196,10 @@ def _fetch_public(industry: str, terms: list[str]) -> list[ThreatEvent]:
         events = _parse_circl_events(industry, resp.json(), terms)
         if events:
             return events
+    except (httpx.HTTPError, httpx.TimeoutException, TimeoutError) as e:
+        logger.debug("CIRCL.lu query failed (%s), trying ThreatFox fallback", e)
     except Exception:
-        logger.debug("CIRCL.lu query failed, trying ThreatFox fallback")
+        logger.exception("Unexpected error querying CIRCL.lu")
 
     # Fallback: abuse.ch ThreatFox
     query_term = terms[0] if terms else industry

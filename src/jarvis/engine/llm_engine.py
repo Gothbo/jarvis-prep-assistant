@@ -7,7 +7,7 @@ import re
 from typing import Any
 
 import httpx
-from openai import OpenAI
+from openai import APIError, APITimeoutError, OpenAI
 from pydantic import ValidationError
 
 from jarvis.engine.intent import IntentResult
@@ -187,8 +187,11 @@ def generate_prep(intent: IntentResult, kb: KnowledgeBase) -> PrepPackage:
     except json.JSONDecodeError as e:
         logger.error("Failed to parse LLM JSON output: %s", e)
         raise LLMUnavailableError(f"Invalid JSON from LLM: {e}")
+    except (APIError, APITimeoutError, httpx.HTTPError, httpx.TimeoutException) as e:
+        logger.error("LLM API error: %s", e)
+        raise LLMUnavailableError(f"LLM API error: {e}")
     except Exception as e:
         if isinstance(e, LLMUnavailableError):
             raise
-        logger.error("LLM API error: %s", e)
+        logger.exception("Unexpected error in LLM generate_prep")
         raise LLMUnavailableError(f"LLM API error: {e}")

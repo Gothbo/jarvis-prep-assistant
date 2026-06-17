@@ -6,6 +6,9 @@ import os
 import random
 from dataclasses import dataclass
 
+import httpx
+from openai import APIError, APITimeoutError
+
 from jarvis.knowledge.loader import KnowledgeBase
 
 logger = logging.getLogger(__name__)
@@ -124,8 +127,11 @@ def generate_customer_reply(
     # Try LLM
     try:
         return _llm_customer_reply(config, history, kb)
-    except Exception as e:
+    except (APIError, APITimeoutError, httpx.HTTPError, httpx.TimeoutException,
+            RuntimeError, json.JSONDecodeError) as e:
         logger.info("LLM customer reply failed (%s), using fallback", e)
+    except Exception:
+        logger.exception("Unexpected error generating customer reply")
 
     # Fallback
     return _rule_customer_reply(config, history)
@@ -238,8 +244,11 @@ def score_conversation(
     """Score the training conversation."""
     try:
         return _llm_score(config, history, kb)
-    except Exception as e:
+    except (APIError, APITimeoutError, httpx.HTTPError, httpx.TimeoutException,
+            RuntimeError, json.JSONDecodeError) as e:
         logger.info("LLM scoring failed (%s), using rule-based", e)
+    except Exception:
+        logger.exception("Unexpected error scoring conversation")
 
     return _rule_score(config, history)
 

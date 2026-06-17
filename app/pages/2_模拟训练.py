@@ -1,6 +1,9 @@
 """Training Role-Play page — chat with an AI customer and get scored."""
 
 import os
+from datetime import datetime
+from pathlib import Path
+
 import streamlit as st
 
 # ---------------------------------------------------------------------------
@@ -29,16 +32,16 @@ for _key in ["LLM_API_KEY", "LLM_BASE_URL", "LLM_MODEL", "LLM_TIMEOUT"]:
 # ---------------------------------------------------------------------------
 try:
     from jarvis.engine.training import (
-        TrainingConfig,
-        ChatMessage,
-        ScoreDimension,
+        INDUSTRY_LABELS,
         PERSONALITY_MAP,
         PERSONALITY_REVERSE,
-        INDUSTRY_LABELS,
-        generate_first_message,
+        ChatMessage,
+        TrainingConfig,
         generate_customer_reply,
+        generate_first_message,
         score_conversation,
     )
+    from jarvis.generators.score_report import generate_markdown_report
     from jarvis.knowledge.loader import load_all
 
     _IMPORTS_OK = True
@@ -81,6 +84,39 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
+# Database initialisation (singleton in session_state)
+# ---------------------------------------------------------------------------
+def _get_training_db():
+    """Return a TrainingDB instance, creating it once per session."""
+    if "training_db" not in st.session_state:
+        try:
+            from jarvis.paths import CACHE_DIR
+            from jarvis.persistence import TrainingDB
+            db_path = CACHE_DIR / "training_sessions.db"
+            st.session_state["training_db"] = TrainingDB(db_path)
+        except Exception:
+            try:
+                import tempfile
+
+                from jarvis.persistence import TrainingDB
+                db_path = Path(tempfile.gettempdir()) / "jarvis_cache" / "training_sessions.db"
+                st.session_state["training_db"] = TrainingDB(db_path)
+            except Exception:
+                st.session_state["training_db"] = None
+    return st.session_state["training_db"]
+
+
+def _save_new_msgs(db, session_id, msgs, saved_count):
+    """Persist any messages beyond *saved_count* and return the new count."""
+    if db is None or session_id is None:
+        return saved_count
+    new_msgs = msgs[saved_count:]
+    if new_msgs:
+        db.save_messages(session_id, new_msgs)
+    return len(msgs)
+
+
+# ---------------------------------------------------------------------------
 # Sidebar
 # ---------------------------------------------------------------------------
 with st.sidebar:
@@ -98,6 +134,48 @@ with st.sidebar:
             st.metric("场景", cfg.scenario)
             st.metric("性格", pers_cn)
             st.metric("消息数", len(st.session_state.get("training_msgs", [])))
+
+    st.divider()
+
+    # ------------------------------------------------------------------
+    # 训练历史 (Training History)
+    # ------------------------------------------------------------------
+    st.markdown("### 训练历史")
+    _db = _get_training_db()
+    if _db is not None:
+        try:
+            _sessions = _db.list_sessions()
+        except Exception:
+            _sessions = []
+
+        if not _sessions:
+            st.caption("暂无历史记录")
+        else:
+            for _sess in _sessions:
+                _date_str = _sess["created_at"][:10] if _sess.get("created_at") else "未知日期"
+                _ind_label = INDUSTRY_LABELS.get(_sess["industry"], _sess.get("industry", ""))
+                _score_val = _sess.get("final_score")
+                _score_str = str(_score_val) if _score_val is not None else "未评分"
+                _hdr = f"**{_date_str}** | {_ind_label} | {_score_str}分"
+
+                with st.expander(_hdr):
+                    _view_key = f"view_{_sess['id']}"
+                    _del_key = f"del_{_sess['id']}"
+                    _c1, _c2 = st.columns(2)
+                    with _c1:
+                        if st.button("查看", key=_view_key, use_container_width=True):
+                            st.session_state["training_phase"] = "review"
+                            st.session_state["review_session_id"] = _sess["id"]
+                            st.rerun()
+                    with _c2:
+                        if st.button("删除", key=_del_key, use_container_width=True):
+                            _db.delete_session(_sess["id"])
+                            if st.session_state.get("review_session_id") == _sess["id"]:
+                                st.session_state.pop("review_session_id", None)
+                                st.session_state["training_phase"] = "config"
+                            st.rerun()
+    else:
+        st.caption("数据库初始化失败，历史记录不可用")
 
     st.divider()
     st.caption("JARVIS v0.3 · Training Module")
@@ -178,6 +256,20 @@ if phase == "config":
             st.session_state["training_msgs"] = [
                 ChatMessage(role="customer", content=first_msg)
             ]
+            # Create DB session and persist the opening message
+            _db = _get_training_db()
+            if _db is not None:
+                try:
+                    _sid = _db.save_session(config, [], [])
+                    _db.save_messages(_sid, [ChatMessage(role="customer", content=first_msg)])
+                    st.session_state["training_session_id"] = _sid
+                    st.session_state["training_saved_msg_count"] = 1
+                except Exception:
+                    st.session_state["training_session_id"] = None
+                    st.session_state["training_saved_msg_count"] = 0
+            else:
+                st.session_state["training_session_id"] = None
+                st.session_state["training_saved_msg_count"] = 0
             st.rerun()
 
     with col2:
@@ -229,6 +321,17 @@ elif phase == "chatting":
                 st.session_state.get("past_training_count", 0) + 1
             )
             st.session_state["past_avg_score"] = result.avg_score
+            # Persist remaining messages and scores to DB
+            _db = _get_training_db()
+            _sid = st.session_state.get("training_session_id")
+            if _db is not None and _sid is not None:
+                try:
+                    _saved = st.session_state.get("training_saved_msg_count", 0)
+                    _save_new_msgs(_db, _sid, msgs, _saved)
+                    st.session_state["training_saved_msg_count"] = len(msgs)
+                    _db.save_scores(_sid, result.scores)
+                except Exception:
+                    pass  # scoring already in session_state; DB is best-effort
             st.rerun()
 
     st.divider()
@@ -284,6 +387,15 @@ elif phase == "chatting":
             reply = generate_customer_reply(config, msgs, kb)
         msgs.append(ChatMessage(role="customer", content=reply))
         st.session_state["training_msgs"] = msgs
+
+        # Auto-save new messages to DB
+        _db = _get_training_db()
+        _sid = st.session_state.get("training_session_id")
+        _saved = st.session_state.get("training_saved_msg_count", 0)
+        st.session_state["training_saved_msg_count"] = _save_new_msgs(
+            _db, _sid, msgs, _saved
+        )
+
         st.rerun()
 
 # ---------------------------------------------------------------------------
@@ -334,6 +446,23 @@ display:flex;justify-content:space-between;align-items:center;">
             unsafe_allow_html=True,
         )
 
+    # Export report
+    session_data = {
+        "config": st.session_state.get("training_config"),
+        "messages": st.session_state.get("training_msgs", []),
+        "result": result,
+        "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    }
+    report_md = generate_markdown_report(session_data)
+    filename = f"训练报告_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+    st.download_button(
+        label="📄 导出报告",
+        data=report_md,
+        file_name=filename,
+        mime="text/markdown",
+        use_container_width=True,
+    )
+
     st.divider()
 
     col_a, col_b = st.columns(2)
@@ -342,9 +471,124 @@ display:flex;justify-content:space-between;align-items:center;">
             for k in [
                 "training_phase", "training_config", "training_msgs",
                 "training_kb", "training_result",
+                "training_session_id", "training_saved_msg_count",
             ]:
                 st.session_state.pop(k, None)
             st.rerun()
     with col_b:
         if st.button("返回首页", use_container_width=True):
             st.switch_page("Home.py")
+
+# ---------------------------------------------------------------------------
+# Phase: REVIEW (viewing a past session from 训练历史)
+# ---------------------------------------------------------------------------
+elif phase == "review":
+    _db = _get_training_db()
+    _review_sid = st.session_state.get("review_session_id")
+
+    if _db is None or not _review_sid:
+        st.error("无法加载历史会话")
+        st.session_state["training_phase"] = "config"
+        st.rerun()
+
+    _review_data = _db.load_session(_review_sid)
+    if not _review_data:
+        st.error("该会话记录不存在或已被删除")
+        st.session_state.pop("review_session_id", None)
+        st.session_state["training_phase"] = "config"
+        st.rerun()
+
+    _sess_meta = _review_data["session"]
+    _review_msgs = _review_data["messages"]
+    _review_scores = _review_data["scores"]
+
+    _ind_label = INDUSTRY_LABELS.get(_sess_meta["industry"], _sess_meta["industry"])
+    _score_val = _sess_meta.get("final_score")
+    _score_str = str(_score_val) if _score_val is not None else "未评分"
+
+    st.markdown("## 历史训练回顾")
+    st.markdown(
+        f"**{_ind_label}** | {_sess_meta['scenario']} | "
+        f"综合评分: **{_score_str}** | {_sess_meta['created_at'][:19]}"
+    )
+    st.divider()
+
+    # ---- conversation replay ----
+    st.markdown("### 对话记录")
+    if not _review_msgs:
+        st.caption("（无消息记录）")
+    for m in _review_msgs:
+        _role = m["role"]
+        _content = m["content"]
+        if _role == "customer":
+            st.markdown(
+                f'<div style="display:flex;gap:10px;margin-bottom:14px;">'
+                f'<div style="width:34px;height:34px;border-radius:11px;'
+                f'background:#e0e7ff;display:flex;align-items:center;'
+                f'justify-content:center;font-size:13px;font-weight:600;'
+                f'flex-shrink:0;">客</div>'
+                f'<div class="chat-bubble chat-customer">{_content}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f'<div style="display:flex;gap:10px;margin-bottom:14px;'
+                f'flex-direction:row-reverse;">'
+                f'<div style="width:34px;height:34px;border-radius:11px;'
+                f'background:#1e293b;color:white;display:flex;align-items:center;'
+                f'justify-content:center;font-size:13px;font-weight:600;'
+                f'flex-shrink:0;">我</div>'
+                f'<div class="chat-bubble chat-user">{_content}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+    # ---- score bars ----
+    if _review_scores:
+        st.divider()
+        st.markdown("### 评分详情")
+
+        _dim_labels = {
+            "opening": ("开场能力", "#6366f1"),
+            "discovery": ("需求挖掘", "#06b6d4"),
+            "objection": ("异议处理", "#f59e0b"),
+            "solution": ("方案呈现", "#10b981"),
+            "closing": ("收尾能力", "#ef4444"),
+        }
+        for sc in _review_scores:
+            _dim = sc["dimension"]
+            _sc_score = sc["score"]
+            _lbl_info = _dim_labels.get(_dim, (_dim, "#94a3b8"))
+            _sc_label = _lbl_info[0]
+            _sc_color = _lbl_info[1]
+            _feedback = sc.get("feedback", "")
+            st.markdown(
+                f'<div class="score-bar-wrap">'
+                f'<span class="score-label">{_sc_label}</span>'
+                f'<div class="score-track">'
+                f'<div class="score-fill" style="width:{_sc_score}%;'
+                f'background:{_sc_color};"></div>'
+                f'</div>'
+                f'<span class="score-val">{_sc_score}</span>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+            if _feedback:
+                st.caption(_feedback)
+
+    st.divider()
+
+    # ---- action buttons ----
+    _ra, _rb = st.columns(2)
+    with _ra:
+        if st.button("返回", use_container_width=True):
+            st.session_state.pop("review_session_id", None)
+            st.session_state["training_phase"] = "config"
+            st.rerun()
+    with _rb:
+        if st.button("删除此记录", type="secondary", use_container_width=True):
+            _db.delete_session(_review_sid)
+            st.session_state.pop("review_session_id", None)
+            st.session_state["training_phase"] = "config"
+            st.rerun()

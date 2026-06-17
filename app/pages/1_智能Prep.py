@@ -27,7 +27,7 @@ for _key in _SECRET_KEYS:
 # ---------------------------------------------------------------------------
 try:
     from jarvis.engine.intent import recognize
-    from jarvis.engine.llm_engine import generate_prep, LLMUnavailableError
+    from jarvis.engine.llm_engine import LLMUnavailableError, generate_prep
     from jarvis.engine.rule_engine import generate_prep_fallback
     from jarvis.generators.ppt_outline import generate_outline
     from jarvis.intelligence.threat_feed import fetch_threats

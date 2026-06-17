@@ -1,10 +1,12 @@
 """Knowledge base loader - reads and validates YAML data files."""
 
 import logging
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 import yaml
+from pydantic import ValidationError
 
 from jarvis.models.case import Case
 from jarvis.models.methodology import Methodology
@@ -45,12 +47,15 @@ def _load_yaml_files(directory: Path) -> list[dict[str, Any]]:
                 data = yaml.safe_load(f)
             if data:
                 results.append(data)
-        except Exception as e:
+        except (OSError, yaml.YAMLError) as e:
             logger.warning("Failed to load %s: %s", filepath.name, e)
+        except Exception:
+            logger.exception("Unexpected error loading %s", filepath.name)
 
     return results
 
 
+@lru_cache(maxsize=1)
 def load_cases(data_dir: Path | None = None) -> list[Case]:
     """Load and validate all case YAML files."""
     base = data_dir or DATA_DIR
@@ -59,11 +64,14 @@ def load_cases(data_dir: Path | None = None) -> list[Case]:
     for raw in raw_list:
         try:
             cases.append(Case.model_validate(raw))
-        except Exception as e:
+        except (ValidationError, ValueError, TypeError) as e:
             logger.warning("Invalid case data: %s", e)
+        except Exception:
+            logger.exception("Unexpected error validating case data")
     return cases
 
 
+@lru_cache(maxsize=1)
 def load_methodologies(data_dir: Path | None = None) -> list[Methodology]:
     """Load and validate all methodology YAML files."""
     base = data_dir or DATA_DIR
@@ -72,11 +80,14 @@ def load_methodologies(data_dir: Path | None = None) -> list[Methodology]:
     for raw in raw_list:
         try:
             methods.append(Methodology.model_validate(raw))
-        except Exception as e:
+        except (ValidationError, ValueError, TypeError) as e:
             logger.warning("Invalid methodology data: %s", e)
+        except Exception:
+            logger.exception("Unexpected error validating methodology data")
     return methods
 
 
+@lru_cache(maxsize=1)
 def load_sensitivities(data_dir: Path | None = None) -> list[SensitivityProfile]:
     """Load and validate all sensitivity profile YAML files."""
     base = data_dir or DATA_DIR
@@ -85,11 +96,14 @@ def load_sensitivities(data_dir: Path | None = None) -> list[SensitivityProfile]
     for raw in raw_list:
         try:
             profiles.append(SensitivityProfile.model_validate(raw))
-        except Exception as e:
+        except (ValidationError, ValueError, TypeError) as e:
             logger.warning("Invalid sensitivity data: %s", e)
+        except Exception:
+            logger.exception("Unexpected error validating sensitivity data")
     return profiles
 
 
+@lru_cache(maxsize=1)
 def load_products(data_dir: Path | None = None) -> list[Product]:
     """Load and validate all product YAML files."""
     base = data_dir or DATA_DIR
@@ -98,11 +112,14 @@ def load_products(data_dir: Path | None = None) -> list[Product]:
     for raw in raw_list:
         try:
             products.append(Product.model_validate(raw))
-        except Exception as e:
+        except (ValidationError, ValueError, TypeError) as e:
             logger.warning("Invalid product data: %s", e)
+        except Exception:
+            logger.exception("Unexpected error validating product data")
     return products
 
 
+@lru_cache(maxsize=1)
 def load_all(data_dir: Path | None = None) -> KnowledgeBase:
     """Load all knowledge data into a unified KnowledgeBase object."""
     return KnowledgeBase(
