@@ -2,19 +2,19 @@
 chcp 65001 >nul 2>&1
 title JARVIS AI - 启动服务
 
-:: 检查 secrets.toml 是否存在
-if not exist "%~dp0.streamlit\secrets.toml" (
-    echo [!] 未找到 .streamlit\secrets.toml，请先配置 LLM API Key
-    echo [!] 参考 .streamlit\secrets.toml.example 创建配置文件
+:: 检查 .env 是否存在
+if not exist "%~dp0.env" (
+    echo [!] 未找到 .env 文件，请先配置 API Key
+    echo [!] 复制 .env.example 为 .env 并填入你的 LLM API Key
     pause
     exit /b 1
 )
 
-:: 用 Python 生成 _env.bat（包含 set 命令），然后 call 它
-E:\anaconda3\python.exe "%~dp0_make_env.py" "%~dp0"
-
-:: 加载生成的环境变量
-if exist "%~dp0_env.bat" call "%~dp0_env.bat"
+:: 用 Python 加载 .env 并生成临时环境设置
+setlocal enabledelayedexpansion
+E:\anaconda3\python.exe -c "import os,sys; sys.path.insert(0,r'%~dp0src'); from jarvis.config import load_config; load_config(); f=open(r'%~dp0_env_tmp.bat','w',encoding='utf-8'); [f.write(f'set {k}={v}\n') for k,v in os.environ.items() if k.startswith(('LLM_','THREAT_','JARVIS_'))]; f.close()"
+if exist "%~dp0_env_tmp.bat" call "%~dp0_env_tmp.bat"
+del "%~dp0_env_tmp.bat" >nul 2>&1
 
 :: 默认值
 if "%LLM_BASE_URL%"=="" set LLM_BASE_URL=https://api.deepseek.com/v1
