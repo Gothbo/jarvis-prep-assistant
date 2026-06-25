@@ -144,23 +144,47 @@ selected_template = st.session_state.get("selected_template", "")
 
 for i, (col, tmpl) in enumerate(zip(template_cols, TEMPLATES)):
     with col:
-        is_active = selected_template == tmpl["key"]
-        active_class = " active" if is_active else ""
-        st.markdown('<div class="jarvis-card-wrapper">', unsafe_allow_html=True)
-        st.markdown(
-            f"""
+        with st.container():
+            is_active = selected_template == tmpl["key"]
+            active_class = " active" if is_active else ""
+            st.markdown(
+                f"""
 <div class="jarvis-template{active_class}">
     <h5>{tmpl["title"]}</h5>
     <p>{tmpl["desc"]}</p>
 </div>
 """,
-            unsafe_allow_html=True,
-        )
-        if st.button(" ", key=f"tmpl_{tmpl['key']}", help=tmpl["title"]):
-            st.session_state["selected_template"] = tmpl["key"]
-            st.session_state["prep_input"] = tmpl["text"]
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+                unsafe_allow_html=True,
+            )
+            if st.button(" ", key=f"tmpl_{tmpl['key']}", help=tmpl["title"]):
+                st.session_state["selected_template"] = tmpl["key"]
+                st.session_state["prep_input"] = tmpl["text"]
+                st.rerun()
+
+# JS: hide template buttons and overlay them on cards
+st.markdown(
+    """
+<script>
+(function() {
+    setTimeout(function() {
+        document.querySelectorAll('.jarvis-template').forEach(function(tmpl) {
+            var container = tmpl.closest('[data-testid="stVerticalBlock"]');
+            if (!container) return;
+            container.style.position = 'relative';
+            var btnEl = container.querySelector('button');
+            if (!btnEl) return;
+            var btnWrap = btnEl.closest('[data-testid="element-container"]');
+            if (btnWrap) {
+                btnWrap.style.cssText = 'position:absolute!important;inset:0!important;z-index:10!important;';
+            }
+            btnEl.style.cssText = 'width:100%!important;height:100%!important;opacity:0!important;background:transparent!important;border:none!important;cursor:pointer!important;box-shadow:none!important;padding:0!important;margin:0!important;font-size:0!important;';
+        });
+    }, 300);
+})();
+</script>
+""",
+    unsafe_allow_html=True,
+)
 
 # ---------------------------------------------------------------------------
 # Input Area

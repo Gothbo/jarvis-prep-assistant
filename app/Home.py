@@ -82,16 +82,6 @@ st.markdown(
 # ---------------------------------------------------------------------------
 # 4 Entry Cards
 # ---------------------------------------------------------------------------
-# Hidden page links — Streamlit resolves correct URLs; JS reads the href
-st.markdown(
-    '<div class="jarvis-nav-hidden" aria-hidden="true">',
-    unsafe_allow_html=True,
-)
-st.page_link("pages/1_智能Prep.py", label="p1")
-st.page_link("pages/2_模拟训练.py", label="p2")
-st.page_link("pages/3_知识库.py", label="p3")
-st.markdown("</div>", unsafe_allow_html=True)
-
 col1, col2, col3, col4 = st.columns(4, gap="medium")
 
 with col1:
@@ -139,27 +129,41 @@ with col4:
     )
     st.caption("通过智能 Prep 自动获取")
 
-# JS: make cards clickable using href from hidden page_link elements
+# JS: read sidebar nav URLs and wire up card clicks
 st.markdown(
     """
 <script>
 (function() {
-    var links = document.querySelectorAll('.jarvis-nav-hidden a');
-    var cards = document.querySelectorAll('.jarvis-card');
-    var urls = [];
-    for (var j = 0; j < links.length; j++) {
-        urls.push(links[j].getAttribute('href'));
-    }
-    for (var i = 0; i < 3 && i < cards.length; i++) {
-        if (urls[i]) {
-            (function(card, url) {
-                card.style.cursor = 'pointer';
-                card.addEventListener('click', function() {
-                    window.location.href = url;
+    // Give Streamlit time to render the sidebar
+    setTimeout(function() {
+        var navLinks = {};
+        // Streamlit sidebar renders <a> tags inside [data-testid="stSidebarNav"]
+        var sidebarLinks = document.querySelectorAll(
+            '[data-testid="stSidebarNav"] a, nav a, [data-testid="stSidebar"] a'
+        );
+        sidebarLinks.forEach(function(link) {
+            var href = link.getAttribute('href');
+            var text = (link.textContent || '').trim();
+            if (text.indexOf('Prep') >= 0 || text.indexOf('prep') >= 0) navLinks.prep = href;
+            if (text.indexOf('训练') >= 0) navLinks.train = href;
+            if (text.indexOf('知识库') >= 0) navLinks.kb = href;
+        });
+
+        var cards = document.querySelectorAll('.jarvis-card');
+        var mapping = ['prep', 'train', 'kb'];  // first 3 cards
+
+        for (var i = 0; i < 3 && i < cards.length; i++) {
+            var url = navLinks[mapping[i]];
+            if (url) {
+                cards[i].style.cursor = 'pointer';
+                cards[i].setAttribute('data-nav-url', url);
+                cards[i].addEventListener('click', function(e) {
+                    var u = this.getAttribute('data-nav-url');
+                    if (u) window.location.href = u;
                 });
-            })(cards[i], urls[i]);
+            }
         }
-    }
+    }, 500);  // delay for sidebar to render
 })();
 </script>
 """,

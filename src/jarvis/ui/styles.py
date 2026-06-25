@@ -119,53 +119,6 @@ h1, h2, h3, h4 {
     text-decoration: none;
 }
 
-/* ── Hidden Streamlit page_link (used to extract href for JS nav) ── */
-.jarvis-nav-hidden {
-    visibility: hidden !important;
-    position: absolute !important;
-    width: 0 !important;
-    height: 0 !important;
-    overflow: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* ── Clickable Card Wrapper ─────────────────────────────────── */
-/* Wraps a .jarvis-card + st.button so the button becomes an invisible
-   full-card overlay — clicking anywhere on the card triggers navigation. */
-.jarvis-card-wrapper {
-    position: relative;
-    height: 100%;
-}
-.jarvis-card-wrapper > div:has(> div > button) {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-}
-.jarvis-card-wrapper > div:has(> div > button) > div {
-    height: 100%;
-}
-.jarvis-card-wrapper > div:has(> div > button) button {
-    width: 100% !important;
-    height: 100% !important;
-    opacity: 0 !important;
-    background: transparent !important;
-    border: none !important;
-    cursor: pointer !important;
-    color: transparent !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    font-size: 0 !important;
-}
-.jarvis-card-wrapper > div:has(> div > button) button:focus,
-.jarvis-card-wrapper > div:has(> div > button) button:active {
-    opacity: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    outline: none !important;
-}
-
 /* ── Result Section Card ───────────────────────────────────────── */
 .jarvis-section {
     background: var(--jarvis-surface);
@@ -223,40 +176,6 @@ h1, h2, h3, h4 {
     font-size: 12px;
     color: var(--jarvis-text-muted);
     margin: 0;
-}
-
-/* Button overlay inside card wrappers (for template cards & nav cards) */
-.jarvis-card-wrapper {
-    position: relative;
-}
-.jarvis-card-wrapper [data-testid="element-container"] {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-}
-.jarvis-card-wrapper [data-testid="element-container"] > div {
-    height: 100%;
-}
-.jarvis-card-wrapper [data-testid="element-container"] button {
-    width: 100% !important;
-    height: 100% !important;
-    opacity: 0 !important;
-    background: transparent !important;
-    border: none !important;
-    color: transparent !important;
-    cursor: pointer !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    font-size: 0 !important;
-}
-.jarvis-card-wrapper [data-testid="element-container"] button:focus,
-.jarvis-card-wrapper [data-testid="element-container"] button:hover,
-.jarvis-card-wrapper [data-testid="element-container"] button:active {
-    opacity: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    outline: none !important;
 }
 
 /* ── Toolbar ───────────────────────────────────────────────────── */
