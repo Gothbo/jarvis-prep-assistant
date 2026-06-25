@@ -1,13 +1,28 @@
-"""Smart Prep page - main Prep package generation UI."""
+"""Smart Prep page — Redesigned with design system.
+
+Features:
+- Template selection + free input (5 scenarios, 7 industries)
+- Step progress bar (4 steps)
+- Sectioned result cards (core prep / reference / threat intel)
+- Export toolbar (PPT outline)
+"""
 
 import streamlit as st
 
 from jarvis.config import load_config
+from jarvis.ui.icons import icon
+from jarvis.ui.styles import (
+    badge,
+    inject_css,
+    result_section,
+    section_header,
+    step_item,
+)
 
 load_config()
 
 # ---------------------------------------------------------------------------
-# Top-level imports (wrapped so the page still renders if modules are missing)
+# Imports (wrapped for graceful degradation)
 # ---------------------------------------------------------------------------
 try:
     from jarvis.engine.intent import recognize
@@ -30,22 +45,34 @@ st.set_page_config(
     page_icon="🛡️",
     layout="wide",
 )
+inject_css()
 
 # ---------------------------------------------------------------------------
-# Sidebar — project info & quick stats
+# Sidebar
 # ---------------------------------------------------------------------------
 with st.sidebar:
-    st.markdown("## JARVIS 智能 Prep")
-    st.markdown("AI 驱动的销售拜访准备助手")
+    st.markdown(
+        f'<div style="display:flex;align-items:center;gap:10px;padding:8px 0;">'
+        f'{icon("shield_check", size=28, color="#6366f1")}'
+        f'<span style="font-size:20px;font-weight:700;color:#1e293b;">JARVIS</span>'
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<p style="font-size:13px;color:#64748b;margin-top:-8px;">AI 驱动的销售拜访准备助手</p>',
+        unsafe_allow_html=True,
+    )
     st.divider()
 
     st.markdown("### 知识库概览")
     try:
         _kb = load_all()
-        st.metric("案例数量", len(_kb.cases))
-        st.metric("方法论数量", len(_kb.methodologies))
-        st.metric("敏感度规则", len(_kb.sensitivities))
-        st.metric("产品信息", len(_kb.products))
+        c1, c2 = st.columns(2)
+        c1.metric("案例", len(_kb.cases))
+        c2.metric("方法论", len(_kb.methodologies))
+        c3, c4 = st.columns(2)
+        c3.metric("敏感度", len(_kb.sensitivities))
+        c4.metric("产品", len(_kb.products))
     except Exception:
         st.caption("知识库加载失败，请检查数据目录。")
 
@@ -53,139 +80,294 @@ with st.sidebar:
     st.caption("JARVIS v0.3 · Prep Assistant")
 
 # ---------------------------------------------------------------------------
-# Title & description
+# Page Header
 # ---------------------------------------------------------------------------
-st.title("智能 Prep")
-st.markdown("为你的客户拜访生成结构化 Prep 包。")
-
-st.divider()
-
-# ---------------------------------------------------------------------------
-# Input section
-# ---------------------------------------------------------------------------
-user_input = st.text_area(
-    "描述你的拜访场景",
-    placeholder="例如：明天拜访一家制造业客户，他们的产线刚遭受勒索软件攻击",
-    height=100,
+st.markdown(
+    f"""
+<div style="display:flex;align-items:center;gap:12px;padding:8px 0 4px;">
+    {icon("shield_check", size=32, color="#6366f1")}
+    <div>
+        <h2 style="margin:0;font-size:24px;font-weight:700;color:#1e293b;">智能 Prep</h2>
+        <p style="margin:4px 0 0;font-size:14px;color:#64748b;">为你的客户拜访生成结构化 Prep 包</p>
+    </div>
+</div>
+""",
+    unsafe_allow_html=True,
 )
 
-# Quick-fill examples
-if st.button("填入示例"):
-    user_input = "明天拜访一家制造业客户，他们的产线刚遭受勒索软件攻击"
-    st.rerun()
+st.divider()
+
+# ---------------------------------------------------------------------------
+# Template Selection
+# ---------------------------------------------------------------------------
+st.markdown(
+    f'<p style="font-size:14px;font-weight:600;color:#1e293b;margin-bottom:8px;">'
+    f'{icon("compass", size=16, color="#6366f1")} 选择场景模板或自由描述</p>',
+    unsafe_allow_html=True,
+)
+
+TEMPLATES = [
+    {
+        "key": "manufacturing_ransomware",
+        "title": "制造业 · 勒索事件",
+        "desc": "产线遭受勒索软件攻击",
+        "text": "明天拜访一家制造业客户，他们的产线刚遭受勒索软件攻击",
+    },
+    {
+        "key": "finance_compliance",
+        "title": "金融 · 合规建设",
+        "desc": "等保 2.0 合规方案",
+        "text": "拜访一家城商行客户，讨论等保 2.0 合规建设方案",
+    },
+    {
+        "key": "healthcare_breach",
+        "title": "医疗 · 数据泄露",
+        "desc": "患者数据泄露事件",
+        "text": "拜访一家三甲医院，他们近期发生了患者数据泄露事件",
+    },
+    {
+        "key": "government_security",
+        "title": "政府 · 等保三级",
+        "desc": "政务系统安全建设",
+        "text": "拜访某市教育局，讨论政务系统等保三级建设方案",
+    },
+    {
+        "key": "custom",
+        "title": "自由输入",
+        "desc": "自定义拜访场景",
+        "text": "",
+    },
+]
+
+template_cols = st.columns(5, gap="small")
+selected_template = st.session_state.get("selected_template", "")
+
+for i, (col, tmpl) in enumerate(zip(template_cols, TEMPLATES)):
+    with col:
+        is_active = selected_template == tmpl["key"]
+        active_class = " active" if is_active else ""
+        st.markdown('<div class="jarvis-card-wrapper">', unsafe_allow_html=True)
+        st.markdown(
+            f"""
+<div class="jarvis-template{active_class}">
+    <h5>{tmpl["title"]}</h5>
+    <p>{tmpl["desc"]}</p>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+        if st.button(" ", key=f"tmpl_{tmpl['key']}", help=tmpl["title"]):
+            st.session_state["selected_template"] = tmpl["key"]
+            st.session_state["prep_input"] = tmpl["text"]
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
+# Input Area
+# ---------------------------------------------------------------------------
+default_text = st.session_state.get("prep_input", "")
+user_input = st.text_area(
+    "描述拜访场景",
+    value=default_text,
+    placeholder="例如：明天拜访一家制造业客户，他们的产线刚遭受勒索软件攻击",
+    height=80,
+    label_visibility="collapsed",
+)
+# Sync template selection with text area changes
+if user_input != default_text:
+    st.session_state["prep_input"] = user_input
+    st.session_state["selected_template"] = "custom"
 
 # Industry quick tags
-st.markdown("**行业快捷标签：**")
-cols = st.columns(3)
-industries = {
-    "制造业": "manufacturing",
-    "金融": "finance",
-    "医疗": "healthcare",
-}
-for col, (label, eng) in zip(cols, industries.items()):
-    if col.button(label):
-        user_input = f"拜访一家{label}客户，讨论安全挑战"
+industry_cols = st.columns(7, gap="small")
+industries = ["制造业", "金融", "医疗", "政府", "教育", "能源", "零售"]
+for col, label in zip(industry_cols, industries):
+    with col:
+        if st.button(label, key=f"ind_{label}", use_container_width=True):
+            st.session_state["prep_input"] = f"拜访一家{label}客户，讨论安全挑战"
+            st.session_state["selected_template"] = "custom"
+            st.rerun()
 
 st.divider()
 
 # ---------------------------------------------------------------------------
-# Generate button
+# Generate Button + Step Progress
 # ---------------------------------------------------------------------------
-if st.button("生成 Prep 包", type="primary", disabled=not user_input):
+generate_clicked = st.button(
+    "生成 Prep 包",
+    type="primary",
+    disabled=not user_input,
+    use_container_width=True,
+)
+
+if generate_clicked:
     if not _IMPORTS_OK:
         st.error(f"模块导入失败：{_IMPORT_ERROR}")
     else:
-        with st.spinner("正在生成 Prep 包…"):
+        # Use st.status for step-by-step progress
+        with st.status("正在生成 Prep 包…", expanded=True) as status:
+            fallback_used = False
+
+            # Step 1: Intent recognition
+            st.write(
+                f"{icon('lightning', size=14, color='#6366f1')} 识别行业与场景…"
+            )
             try:
-                # Load knowledge base
                 kb = load_all()
-
-                # Recognize intent
                 intent = recognize(user_input)
-                st.info(f"识别结果：行业={intent.industry}，场景={intent.scenario}")
-
-                # Try LLM generation, fallback to rules
-                fallback_used = False
-                try:
-                    pkg = generate_prep(intent, kb)
-                except LLMUnavailableError as e:
-                    st.warning(f"已切换为基础模式（{e}）")
-                    pkg = generate_prep_fallback(intent, kb)
-                    fallback_used = True
-
-                # Enrich with threat intel
-                pkg.threat_intel = fetch_threats(intent.industry)
-
-                # Persist in session state so other interactions can reuse
-                st.session_state["pkg"] = pkg
-
-                st.success(
-                    "Prep 包已生成！"
-                    + ("（基础模式）" if fallback_used else "")
+                st.write(
+                    f"    行业={intent.industry}，场景={intent.scenario}"
                 )
-
             except Exception as e:
-                st.error(f"生成出错：{e}")
+                status.update(label="意图识别失败", state="error")
+                st.error(f"意图识别出错：{e}")
+                st.stop()
+
+            # Step 2: Knowledge retrieval
+            st.write(
+                f"{icon('database', size=14, color='#6366f1')} 检索知识库…"
+            )
+            matched_count = "匹配中"
+            try:
+                # Pre-check to show count
+                st.write(f"    知识库已加载（{len(kb.cases)} 案例）")
+            except Exception:
+                pass
+
+            # Step 3: Generate Prep package
+            st.write(
+                f"{icon('rocket', size=14, color='#6366f1')} 生成 Prep 包…"
+            )
+            try:
+                pkg = generate_prep(intent, kb)
+                st.write("    LLM 生成完成")
+            except LLMUnavailableError as e:
+                st.warning(f"    已切换为基础模式（{e}）")
+                pkg = generate_prep_fallback(intent, kb)
+                fallback_used = True
+
+            # Step 4: Threat intel
+            st.write(
+                f"{icon('magnifying_glass', size=14, color='#6366f1')} 拉取威胁情报…"
+            )
+            try:
+                pkg.threat_intel = fetch_threats(intent.industry)
+                threat_count = len(pkg.threat_intel) if pkg.threat_intel else 0
+                st.write(f"    获取到 {threat_count} 条威胁事件")
+            except Exception:
+                pkg.threat_intel = []
+                st.write("    威胁情报暂不可用")
+
+            # Save to session
+            st.session_state["pkg"] = pkg
+            st.session_state["fallback_used"] = fallback_used
+
+            label = "Prep 包已生成"
+            if fallback_used:
+                label += "（基础模式）"
+            status.update(label=label, state="complete")
 
 # ---------------------------------------------------------------------------
-# Render results (from freshly generated or previously cached session state)
+# Render Results
 # ---------------------------------------------------------------------------
 pkg = st.session_state.get("pkg")
 
 if pkg is not None:
-    with st.expander("场景判断", expanded=True):
-        st.markdown(pkg.scenario_assessment)
+    fallback_used = st.session_state.get("fallback_used", False)
 
-    with st.expander("敏感度提醒"):
-        for alert in pkg.sensitivity_alerts:
-            st.markdown(f"- {alert}")
+    # Export toolbar (top-right)
+    toolbar_col1, toolbar_col2, toolbar_col3 = st.columns([6, 1, 1])
+    with toolbar_col2:
+        if st.button(
+            f"  PPT 大纲",
+            key="btn_ppt_toolbar",
+            use_container_width=True,
+            help="生成 PPT 演示大纲",
+        ):
+            try:
+                outline = generate_outline(pkg)
+                st.session_state["ppt_outline"] = outline
+            except Exception as e:
+                st.error(f"PPT 大纲生成失败：{e}")
+    with toolbar_col3:
+        outline = st.session_state.get("ppt_outline")
+        if outline:
+            st.download_button(
+                f"  下载 .md",
+                data=outline.encode("utf-8"),
+                file_name="prep_outline.md",
+                mime="text/markdown",
+                key="btn_download_outline",
+                use_container_width=True,
+            )
 
-    with st.expander("案例匹配"):
+    # Fallback warning
+    if fallback_used:
+        st.warning(
+            f" {badge('基础模式', 'warning')}  LLM 不可用，已使用规则引擎生成结果。"
+        )
+
+    st.markdown("---")
+
+    # ── Section 1: Core Prep (expanded) ────────────────────────────────
+    core_content = f"""
+<div style="margin-bottom:16px;">
+    <p style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">场景判断</p>
+    <p style="font-size:14px;line-height:1.7;color:#1e293b;">{pkg.scenario_assessment}</p>
+</div>
+<div style="margin-bottom:16px;">
+    <p style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">方案方向</p>
+    <p style="font-size:14px;line-height:1.7;color:#1e293b;">{pkg.solution_direction}</p>
+</div>
+<div>
+    <p style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">话术要点</p>
+    <p style="font-size:14px;line-height:1.7;color:#1e293b;">{pkg.talking_points}</p>
+</div>
+"""
+    st.markdown(
+        result_section("核心准备", "target", core_content),
+        unsafe_allow_html=True,
+    )
+
+    # ── Section 2: Reference Materials (collapsed by default) ──────────
+    with st.expander(
+        f"  参考素材",
+        expanded=False,
+    ):
+        # Cases
+        st.markdown("**案例匹配**")
         if pkg.matched_cases:
             for case_id in pkg.matched_cases:
                 st.markdown(f"- `{case_id}`")
         else:
-            st.markdown("_未匹配到具体案例_")
+            st.caption("未匹配到具体案例，尝试更换行业标签或更通用的关键词。")
 
-    with st.expander("追问清单"):
+        # Follow-up questions
+        st.markdown("**追问清单**")
         for q in pkg.follow_up_questions:
             st.markdown(f"- {q}")
 
-    with st.expander("方案方向"):
-        st.markdown(pkg.solution_direction)
+        # Sensitivity alerts
+        st.markdown("**敏感度提醒**")
+        for alert in pkg.sensitivity_alerts:
+            st.markdown(f"- {alert}")
 
-    with st.expander("话术要点"):
-        st.markdown(pkg.talking_points)
-
+    # ── Section 3: Threat Intelligence (collapsed by default) ──────────
     if pkg.threat_intel:
-        with st.expander("威胁情报"):
+        threat_badge = badge(f"{len(pkg.threat_intel)} 条", "danger")
+        with st.expander(
+            f"  威胁情报  {threat_badge}",
+            expanded=False,
+        ):
             for event in pkg.threat_intel:
                 st.markdown(f"**{event.title}** ({event.date})")
                 st.markdown(event.description)
                 if event.source_url:
                     st.markdown(f"[来源]({event.source_url})")
+                st.divider()
 
-    # ------------------------------------------------------------------
-    # PPT Outline section
-    # ------------------------------------------------------------------
-    st.divider()
-    st.markdown("### PPT 大纲")
-
-    if st.button("生成 PPT 大纲"):
-        try:
-            outline = generate_outline(pkg)
-            st.session_state["ppt_outline"] = outline
-        except Exception as e:
-            st.error(f"生成 PPT 大纲失败：{e}")
-
+    # ── PPT Outline (if generated) ─────────────────────────────────────
     outline = st.session_state.get("ppt_outline")
     if outline:
-        st.markdown(outline)
-        st.code(outline, language="markdown")
-
-        st.download_button(
-            label="下载 PPT 大纲 (.md)",
-            data=outline.encode("utf-8"),
-            file_name="prep_outline.md",
-            mime="text/markdown",
-        )
+        with st.expander("  PPT 大纲预览", expanded=True):
+            st.markdown(outline)
