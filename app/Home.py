@@ -82,10 +82,19 @@ st.markdown(
 # ---------------------------------------------------------------------------
 # 4 Entry Cards
 # ---------------------------------------------------------------------------
+# Hidden page links — Streamlit resolves correct URLs; JS reads the href
+st.markdown(
+    '<div class="jarvis-nav-hidden" aria-hidden="true">',
+    unsafe_allow_html=True,
+)
+st.page_link("pages/1_智能Prep.py", label="p1")
+st.page_link("pages/2_模拟训练.py", label="p2")
+st.page_link("pages/3_知识库.py", label="p3")
+st.markdown("</div>", unsafe_allow_html=True)
+
 col1, col2, col3, col4 = st.columns(4, gap="medium")
 
 with col1:
-    st.markdown('<div class="jarvis-card-wrapper">', unsafe_allow_html=True)
     st.markdown(
         card(
             title="智能 Prep",
@@ -95,12 +104,8 @@ with col1:
         ),
         unsafe_allow_html=True,
     )
-    if st.button(" ", key="goto_prep", help="进入智能 Prep"):
-        st.switch_page("pages/1_智能Prep.py")
-    st.markdown("</div>", unsafe_allow_html=True)
 
 with col2:
-    st.markdown('<div class="jarvis-card-wrapper">', unsafe_allow_html=True)
     st.markdown(
         card(
             title="模拟训练",
@@ -110,12 +115,8 @@ with col2:
         ),
         unsafe_allow_html=True,
     )
-    if st.button(" ", key="goto_train", help="进入模拟训练"):
-        st.switch_page("pages/2_模拟训练.py")
-    st.markdown("</div>", unsafe_allow_html=True)
 
 with col3:
-    st.markdown('<div class="jarvis-card-wrapper">', unsafe_allow_html=True)
     st.markdown(
         card(
             title="知识库",
@@ -125,12 +126,8 @@ with col3:
         ),
         unsafe_allow_html=True,
     )
-    if st.button(" ", key="goto_kb", help="进入知识库"):
-        st.switch_page("pages/3_知识库.py")
-    st.markdown("</div>", unsafe_allow_html=True)
 
 with col4:
-    st.markdown('<div class="jarvis-card-wrapper">', unsafe_allow_html=True)
     st.markdown(
         card(
             title="威胁情报",
@@ -141,4 +138,30 @@ with col4:
         unsafe_allow_html=True,
     )
     st.caption("通过智能 Prep 自动获取")
-    st.markdown("</div>", unsafe_allow_html=True)
+
+# JS: make cards clickable using href from hidden page_link elements
+st.markdown(
+    """
+<script>
+(function() {
+    var links = document.querySelectorAll('.jarvis-nav-hidden a');
+    var cards = document.querySelectorAll('.jarvis-card');
+    var urls = [];
+    for (var j = 0; j < links.length; j++) {
+        urls.push(links[j].getAttribute('href'));
+    }
+    for (var i = 0; i < 3 && i < cards.length; i++) {
+        if (urls[i]) {
+            (function(card, url) {
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', function() {
+                    window.location.href = url;
+                });
+            })(cards[i], urls[i]);
+        }
+    }
+})();
+</script>
+""",
+    unsafe_allow_html=True,
+)

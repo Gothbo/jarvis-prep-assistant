@@ -111,6 +111,24 @@ h1, h2, h3, h4 {
     color: var(--jarvis-primary);
     text-decoration: none;
 }
+.jarvis-card-link {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* ── Hidden Streamlit page_link (used to extract href for JS nav) ── */
+.jarvis-nav-hidden {
+    visibility: hidden !important;
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
 
 /* ── Clickable Card Wrapper ─────────────────────────────────── */
 /* Wraps a .jarvis-card + st.button so the button becomes an invisible
@@ -207,6 +225,40 @@ h1, h2, h3, h4 {
     margin: 0;
 }
 
+/* Button overlay inside card wrappers (for template cards & nav cards) */
+.jarvis-card-wrapper {
+    position: relative;
+}
+.jarvis-card-wrapper [data-testid="element-container"] {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+}
+.jarvis-card-wrapper [data-testid="element-container"] > div {
+    height: 100%;
+}
+.jarvis-card-wrapper [data-testid="element-container"] button {
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    color: transparent !important;
+    cursor: pointer !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 0 !important;
+}
+.jarvis-card-wrapper [data-testid="element-container"] button:focus,
+.jarvis-card-wrapper [data-testid="element-container"] button:hover,
+.jarvis-card-wrapper [data-testid="element-container"] button:active {
+    opacity: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
 /* ── Toolbar ───────────────────────────────────────────────────── */
 .jarvis-toolbar {
     display: flex;
@@ -296,7 +348,7 @@ def inject_css():
 # ── Reusable HTML Components ────────────────────────────────────────────────
 
 
-def card(title: str, description: str, icon_name: str, link_text: str = "进入 →") -> str:
+def card(title: str, description: str, icon_name: str, link_text: str = "进入 →", url: str = "") -> str:
     """Render a feature entry card.
 
     Args:
@@ -304,10 +356,15 @@ def card(title: str, description: str, icon_name: str, link_text: str = "进入 
         description: Short description (1-2 lines)
         icon_name: Phosphor icon name (from icons.py)
         link_text: CTA text at bottom
+        url: Optional URL — when set, the whole card becomes clickable
     """
     svg = icon(icon_name, size=32, color="var(--jarvis-primary)")
+    link_html = ""
+    if url:
+        link_html = f'<a class="jarvis-card-link" href="{url}"></a>'
     return f"""
-<div class="jarvis-card">
+<div class="jarvis-card" style="position:relative;">
+    {link_html}
     <div class="card-icon">{svg}</div>
     <h4>{title}</h4>
     <p>{description}</p>
