@@ -267,7 +267,7 @@ def inject_css():
 # ── Reusable HTML Components ────────────────────────────────────────────────
 
 
-def card(title: str, description: str, icon_name: str, link_text: str = "进入 →", url: str = "") -> str:
+def card(title: str, description: str, icon_name: str, link_text: str = "进入 →", data_page: str = "") -> str:
     """Render a feature entry card.
 
     Args:
@@ -275,15 +275,14 @@ def card(title: str, description: str, icon_name: str, link_text: str = "进入 
         description: Short description (1-2 lines)
         icon_name: Phosphor icon name (from icons.py)
         link_text: CTA text at bottom
-        url: Optional URL — when set, the whole card becomes clickable
+        data_page: Optional page filename — when set, card becomes clickable
+                   (JS reads data-page attribute and sets ?navigate= query param)
     """
     svg = icon(icon_name, size=32, color="var(--jarvis-primary)")
-    link_html = ""
-    if url:
-        link_html = f'<a class="jarvis-card-link" href="{url}"></a>'
+    data_attr = f' data-page="{data_page}"' if data_page else ""
+    cursor = "cursor:pointer;" if data_page else ""
     return f"""
-<div class="jarvis-card" style="position:relative;">
-    {link_html}
+<div class="jarvis-card"{data_attr} style="position:relative;{cursor}">
     <div class="card-icon">{svg}</div>
     <h4>{title}</h4>
     <p>{description}</p>

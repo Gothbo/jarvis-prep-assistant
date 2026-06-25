@@ -142,45 +142,40 @@ TEMPLATES = [
 template_cols = st.columns(5, gap="small")
 selected_template = st.session_state.get("selected_template", "")
 
+# Handle template selection from JS (?tmpl=<key>)
+_tmpl_from_url = st.query_params.get("tmpl")
+if _tmpl_from_url:
+    st.query_params.pop("tmpl", None)
+    for t in TEMPLATES:
+        if t["key"] == _tmpl_from_url:
+            st.session_state["selected_template"] = t["key"]
+            st.session_state["prep_input"] = t["text"]
+    st.rerun()
+
 for i, (col, tmpl) in enumerate(zip(template_cols, TEMPLATES)):
     with col:
-        with st.container():
-            is_active = selected_template == tmpl["key"]
-            active_class = " active" if is_active else ""
-            st.markdown(
-                f"""
-<div class="jarvis-template{active_class}">
+        is_active = selected_template == tmpl["key"]
+        active_class = " active" if is_active else ""
+        st.markdown(
+            f"""
+<div class="jarvis-template{active_class}" data-tmpl="{tmpl["key"]}" style="cursor:pointer;">
     <h5>{tmpl["title"]}</h5>
     <p>{tmpl["desc"]}</p>
 </div>
 """,
-                unsafe_allow_html=True,
-            )
-            if st.button(" ", key=f"tmpl_{tmpl['key']}", help=tmpl["title"]):
-                st.session_state["selected_template"] = tmpl["key"]
-                st.session_state["prep_input"] = tmpl["text"]
-                st.rerun()
+            unsafe_allow_html=True,
+        )
 
-# JS: hide template buttons and overlay them on cards
+# JS: template click → set query param → page reloads → Python sets session state
 st.markdown(
     """
 <script>
-(function() {
-    setTimeout(function() {
-        document.querySelectorAll('.jarvis-template').forEach(function(tmpl) {
-            var container = tmpl.closest('[data-testid="stVerticalBlock"]');
-            if (!container) return;
-            container.style.position = 'relative';
-            var btnEl = container.querySelector('button');
-            if (!btnEl) return;
-            var btnWrap = btnEl.closest('[data-testid="element-container"]');
-            if (btnWrap) {
-                btnWrap.style.cssText = 'position:absolute!important;inset:0!important;z-index:10!important;';
-            }
-            btnEl.style.cssText = 'width:100%!important;height:100%!important;opacity:0!important;background:transparent!important;border:none!important;cursor:pointer!important;box-shadow:none!important;padding:0!important;margin:0!important;font-size:0!important;';
-        });
-    }, 300);
-})();
+document.querySelectorAll('.jarvis-template[data-tmpl]').forEach(function(t) {
+    t.addEventListener('click', function() {
+        var key = this.getAttribute('data-tmpl');
+        window.location.search = '?tmpl=' + encodeURIComponent(key);
+    });
+});
 </script>
 """,
     unsafe_allow_html=True,

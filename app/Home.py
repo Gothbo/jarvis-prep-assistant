@@ -80,6 +80,14 @@ st.markdown(
 )
 
 # ---------------------------------------------------------------------------
+# Handle navigation from card clicks (JS sets ?navigate=<page>)
+# ---------------------------------------------------------------------------
+_nav = st.query_params.get("navigate")
+if _nav:
+    st.query_params.pop("navigate", None)
+    st.switch_page(f"pages/{_nav}")
+
+# ---------------------------------------------------------------------------
 # 4 Entry Cards
 # ---------------------------------------------------------------------------
 col1, col2, col3, col4 = st.columns(4, gap="medium")
@@ -91,6 +99,7 @@ with col1:
             description="为你的客户拜访生成结构化 Prep 包：场景评估、敏感度提醒、追问清单和话术要点。",
             icon_name="shield_check",
             link_text="开始准备 →",
+            data_page="1_智能Prep.py",
         ),
         unsafe_allow_html=True,
     )
@@ -102,6 +111,7 @@ with col2:
             description="与 AI 客户进行角色扮演训练，练习需求挖掘和方案呈现，获取五维评分。",
             icon_name="chat_dots",
             link_text="开始训练 →",
+            data_page="2_模拟训练.py",
         ),
         unsafe_allow_html=True,
     )
@@ -113,6 +123,7 @@ with col3:
             description="浏览案例、方法论、行业敏感度和产品资料，支持关键词搜索和分类筛选。",
             icon_name="database",
             link_text="浏览知识库 →",
+            data_page="3_知识库.py",
         ),
         unsafe_allow_html=True,
     )
@@ -129,42 +140,16 @@ with col4:
     )
     st.caption("通过智能 Prep 自动获取")
 
-# JS: read sidebar nav URLs and wire up card clicks
+# JS: card click → set query param → page reloads → Python navigates
 st.markdown(
     """
 <script>
-(function() {
-    // Give Streamlit time to render the sidebar
-    setTimeout(function() {
-        var navLinks = {};
-        // Streamlit sidebar renders <a> tags inside [data-testid="stSidebarNav"]
-        var sidebarLinks = document.querySelectorAll(
-            '[data-testid="stSidebarNav"] a, nav a, [data-testid="stSidebar"] a'
-        );
-        sidebarLinks.forEach(function(link) {
-            var href = link.getAttribute('href');
-            var text = (link.textContent || '').trim();
-            if (text.indexOf('Prep') >= 0 || text.indexOf('prep') >= 0) navLinks.prep = href;
-            if (text.indexOf('训练') >= 0) navLinks.train = href;
-            if (text.indexOf('知识库') >= 0) navLinks.kb = href;
-        });
-
-        var cards = document.querySelectorAll('.jarvis-card');
-        var mapping = ['prep', 'train', 'kb'];  // first 3 cards
-
-        for (var i = 0; i < 3 && i < cards.length; i++) {
-            var url = navLinks[mapping[i]];
-            if (url) {
-                cards[i].style.cursor = 'pointer';
-                cards[i].setAttribute('data-nav-url', url);
-                cards[i].addEventListener('click', function(e) {
-                    var u = this.getAttribute('data-nav-url');
-                    if (u) window.location.href = u;
-                });
-            }
-        }
-    }, 500);  // delay for sidebar to render
-})();
+document.querySelectorAll('.jarvis-card[data-page]').forEach(function(card) {
+    card.addEventListener('click', function() {
+        var page = this.getAttribute('data-page');
+        window.location.search = '?navigate=' + encodeURIComponent(page);
+    });
+});
 </script>
 """,
     unsafe_allow_html=True,
