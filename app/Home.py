@@ -80,14 +80,6 @@ st.markdown(
 )
 
 # ---------------------------------------------------------------------------
-# Handle navigation from card clicks (JS sets ?navigate=<page>)
-# ---------------------------------------------------------------------------
-_nav = st.query_params.get("navigate")
-if _nav:
-    st.query_params.pop("navigate", None)
-    st.switch_page(f"pages/{_nav}")
-
-# ---------------------------------------------------------------------------
 # 4 Entry Cards
 # ---------------------------------------------------------------------------
 col1, col2, col3, col4 = st.columns(4, gap="medium")
@@ -99,7 +91,6 @@ with col1:
             description="为你的客户拜访生成结构化 Prep 包：场景评估、敏感度提醒、追问清单和话术要点。",
             icon_name="shield_check",
             link_text="开始准备 →",
-            data_page="1_智能Prep.py",
         ),
         unsafe_allow_html=True,
     )
@@ -111,7 +102,6 @@ with col2:
             description="与 AI 客户进行角色扮演训练，练习需求挖掘和方案呈现，获取五维评分。",
             icon_name="chat_dots",
             link_text="开始训练 →",
-            data_page="2_模拟训练.py",
         ),
         unsafe_allow_html=True,
     )
@@ -123,7 +113,6 @@ with col3:
             description="浏览案例、方法论、行业敏感度和产品资料，支持关键词搜索和分类筛选。",
             icon_name="database",
             link_text="浏览知识库 →",
-            data_page="3_知识库.py",
         ),
         unsafe_allow_html=True,
     )
@@ -140,17 +129,22 @@ with col4:
     )
     st.caption("通过智能 Prep 自动获取")
 
-# JS: card click → set query param → page reloads → Python navigates
-st.markdown(
-    """
-<script>
-document.querySelectorAll('.jarvis-card[data-page]').forEach(function(card) {
-    card.addEventListener('click', function() {
-        var page = this.getAttribute('data-page');
-        window.location.search = '?navigate=' + encodeURIComponent(page);
-    });
-});
-</script>
-""",
-    unsafe_allow_html=True,
-)
+# ---------------------------------------------------------------------------
+# Navigation buttons (native Streamlit — JS in st.markdown does not execute)
+# ---------------------------------------------------------------------------
+nav1, nav2, nav3, nav4 = st.columns(4, gap="medium")
+
+with nav1:
+    if st.button("开始准备 →", key="nav_prep", use_container_width=True):
+        st.switch_page("pages/1_智能Prep.py")
+
+with nav2:
+    if st.button("开始训练 →", key="nav_train", use_container_width=True):
+        st.switch_page("pages/2_模拟训练.py")
+
+with nav3:
+    if st.button("浏览知识库 →", key="nav_kb", use_container_width=True):
+        st.switch_page("pages/3_知识库.py")
+
+with nav4:
+    st.button("查看情报 →", key="nav_intel", use_container_width=True, disabled=True)

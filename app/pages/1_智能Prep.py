@@ -142,23 +142,13 @@ TEMPLATES = [
 template_cols = st.columns(5, gap="small")
 selected_template = st.session_state.get("selected_template", "")
 
-# Handle template selection from JS (?tmpl=<key>)
-_tmpl_from_url = st.query_params.get("tmpl")
-if _tmpl_from_url:
-    st.query_params.pop("tmpl", None)
-    for t in TEMPLATES:
-        if t["key"] == _tmpl_from_url:
-            st.session_state["selected_template"] = t["key"]
-            st.session_state["prep_input"] = t["text"]
-    st.rerun()
-
 for i, (col, tmpl) in enumerate(zip(template_cols, TEMPLATES)):
     with col:
         is_active = selected_template == tmpl["key"]
         active_class = " active" if is_active else ""
         st.markdown(
             f"""
-<div class="jarvis-template{active_class}" data-tmpl="{tmpl["key"]}" style="cursor:pointer;">
+<div class="jarvis-template{active_class}">
     <h5>{tmpl["title"]}</h5>
     <p>{tmpl["desc"]}</p>
 </div>
@@ -166,20 +156,19 @@ for i, (col, tmpl) in enumerate(zip(template_cols, TEMPLATES)):
             unsafe_allow_html=True,
         )
 
-# JS: template click → set query param → page reloads → Python sets session state
-st.markdown(
-    """
-<script>
-document.querySelectorAll('.jarvis-template[data-tmpl]').forEach(function(t) {
-    t.addEventListener('click', function() {
-        var key = this.getAttribute('data-tmpl');
-        window.location.search = '?tmpl=' + encodeURIComponent(key);
-    });
-});
-</script>
-""",
-    unsafe_allow_html=True,
-)
+# Native buttons for template selection (JS in st.markdown does not execute)
+btn_cols = st.columns(5, gap="small")
+for col, tmpl in zip(btn_cols, TEMPLATES):
+    with col:
+        if st.button(
+            tmpl["title"],
+            key=f"tmpl_{tmpl['key']}",
+            use_container_width=True,
+            type="primary" if selected_template == tmpl["key"] else "secondary",
+        ):
+            st.session_state["selected_template"] = tmpl["key"]
+            st.session_state["prep_input"] = tmpl["text"]
+            st.rerun()
 
 # ---------------------------------------------------------------------------
 # Input Area
