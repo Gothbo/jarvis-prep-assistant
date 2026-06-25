@@ -111,13 +111,8 @@ h1, h2, h3, h4 {
     color: var(--jarvis-primary);
     text-decoration: none;
 }
-.jarvis-card-link {
-    position: absolute;
-    inset: 0;
-    z-index: 10;
-    cursor: pointer;
-    text-decoration: none;
-}
+/* Card overlay CSS is injected per-page, not globally, because different
+ * pages have different horizontal-block layouts. See Home.py and Prep.py. */
 
 /* ── Result Section Card ───────────────────────────────────────── */
 .jarvis-section {
@@ -267,22 +262,21 @@ def inject_css():
 # ── Reusable HTML Components ────────────────────────────────────────────────
 
 
-def card(title: str, description: str, icon_name: str, link_text: str = "进入 →", data_page: str = "") -> str:
-    """Render a feature entry card.
+def card(title: str, description: str, icon_name: str, link_text: str = "进入 →") -> str:
+    """Render a feature entry card (visual only).
+
+    Interactivity is handled by a transparent st.button() overlay placed
+    in the same column. See the "Clickable Card Overlay" CSS in _GLOBAL_CSS.
 
     Args:
         title: Card heading
         description: Short description (1-2 lines)
         icon_name: Phosphor icon name (from icons.py)
         link_text: CTA text at bottom
-        data_page: Optional page filename — when set, card becomes clickable
-                   (JS reads data-page attribute and sets ?navigate= query param)
     """
     svg = icon(icon_name, size=32, color="var(--jarvis-primary)")
-    data_attr = f' data-page="{data_page}"' if data_page else ""
-    cursor = "cursor:pointer;" if data_page else ""
     return f"""
-<div class="jarvis-card"{data_attr} style="position:relative;{cursor}">
+<div class="jarvis-card" style="position:relative;">
     <div class="card-icon">{svg}</div>
     <h4>{title}</h4>
     <p>{description}</p>

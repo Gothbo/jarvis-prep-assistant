@@ -47,6 +47,36 @@ st.set_page_config(
 )
 inject_css()
 
+# Prep page: transparent button overlay on template card columns only.
+# Strategy: template buttons have help="tpl" which wraps them in
+# <div class="stTooltipIcon"> — a unique CSS hook. Industry buttons and
+# the generate button have no help param, so :has(.stTooltipIcon) targets
+# ONLY the template card columns.
+st.markdown(
+    """
+<style>
+div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has(.stTooltipIcon) {
+    position: relative;
+    gap: 0 !important;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has(.stTooltipIcon)
+    div[data-testid="element-container"]:has(.stTooltipIcon) {
+    position: absolute; inset: 0; z-index: 10;
+    margin: 0 !important; padding: 0 !important; height: 100% !important;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has(.stTooltipIcon)
+    button {
+    position: absolute; inset: 0;
+    width: 100% !important; height: 100% !important;
+    opacity: 0 !important; background: transparent !important;
+    border: none !important; box-shadow: none !important;
+    cursor: pointer !important; margin: 0 !important; padding: 0 !important;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
 # ---------------------------------------------------------------------------
 # Sidebar
 # ---------------------------------------------------------------------------
@@ -155,16 +185,14 @@ for i, (col, tmpl) in enumerate(zip(template_cols, TEMPLATES)):
 """,
             unsafe_allow_html=True,
         )
-
-# Native buttons for template selection (JS in st.markdown does not execute)
-btn_cols = st.columns(5, gap="small")
-for col, tmpl in zip(btn_cols, TEMPLATES):
-    with col:
+        # Transparent overlay button — help="tpl" wraps it in
+        # <div class="stTooltipIcon">, giving CSS a unique selector hook.
+        # The overlay CSS makes it invisible and stretched over the card.
         if st.button(
             tmpl["title"],
             key=f"tmpl_{tmpl['key']}",
             use_container_width=True,
-            type="primary" if selected_template == tmpl["key"] else "secondary",
+            help="tpl",
         ):
             st.session_state["selected_template"] = tmpl["key"]
             st.session_state["prep_input"] = tmpl["text"]

@@ -21,6 +21,38 @@ st.set_page_config(
 password_gate()
 inject_css()
 
+# Home page: transparent button overlay on card columns
+# (Streamlit does NOT render the Python key as an HTML attribute,
+#  so we use :has(button) to find columns that contain buttons.)
+st.markdown(
+    """
+<style>
+div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has(button) {
+    position: relative;
+    cursor: pointer;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has(button)
+    div[data-testid="element-container"]:has(button) {
+    position: absolute; inset: 0; z-index: 10;
+    margin: 0 !important; padding: 0 !important; height: 100% !important;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has(button)
+    button {
+    position: absolute; inset: 0;
+    width: 100% !important; height: 100% !important;
+    opacity: 0 !important; background: transparent !important;
+    border: none !important; box-shadow: none !important;
+    cursor: pointer !important; margin: 0 !important; padding: 0 !important;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has(button)
+    button:disabled {
+    cursor: default !important; pointer-events: none;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
 # ---------------------------------------------------------------------------
 # Sidebar
 # ---------------------------------------------------------------------------
@@ -80,7 +112,7 @@ st.markdown(
 )
 
 # ---------------------------------------------------------------------------
-# 4 Entry Cards
+# 4 Entry Cards (card + transparent overlay button — CSS merges them)
 # ---------------------------------------------------------------------------
 col1, col2, col3, col4 = st.columns(4, gap="medium")
 
@@ -94,6 +126,8 @@ with col1:
         ),
         unsafe_allow_html=True,
     )
+    if st.button("开始准备 →", key="nav_prep", use_container_width=True):
+        st.switch_page("pages/1_智能Prep.py")
 
 with col2:
     st.markdown(
@@ -105,6 +139,8 @@ with col2:
         ),
         unsafe_allow_html=True,
     )
+    if st.button("开始训练 →", key="nav_train", use_container_width=True):
+        st.switch_page("pages/2_模拟训练.py")
 
 with col3:
     st.markdown(
@@ -116,6 +152,8 @@ with col3:
         ),
         unsafe_allow_html=True,
     )
+    if st.button("浏览知识库 →", key="nav_kb", use_container_width=True):
+        st.switch_page("pages/3_知识库.py")
 
 with col4:
     st.markdown(
@@ -127,24 +165,5 @@ with col4:
         ),
         unsafe_allow_html=True,
     )
-    st.caption("通过智能 Prep 自动获取")
-
-# ---------------------------------------------------------------------------
-# Navigation buttons (native Streamlit — JS in st.markdown does not execute)
-# ---------------------------------------------------------------------------
-nav1, nav2, nav3, nav4 = st.columns(4, gap="medium")
-
-with nav1:
-    if st.button("开始准备 →", key="nav_prep", use_container_width=True):
-        st.switch_page("pages/1_智能Prep.py")
-
-with nav2:
-    if st.button("开始训练 →", key="nav_train", use_container_width=True):
-        st.switch_page("pages/2_模拟训练.py")
-
-with nav3:
-    if st.button("浏览知识库 →", key="nav_kb", use_container_width=True):
-        st.switch_page("pages/3_知识库.py")
-
-with nav4:
     st.button("查看情报 →", key="nav_intel", use_container_width=True, disabled=True)
+    st.caption("通过智能 Prep 自动获取")
