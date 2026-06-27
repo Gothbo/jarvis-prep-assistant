@@ -9,6 +9,8 @@ try:
     from jarvis.engine.training import INDUSTRY_LABELS
     from jarvis.knowledge.loader import KnowledgeBase, load_all
     from jarvis.search.fulltext import SearchResult, search_knowledge_base
+    from jarvis.ui.icons import icon
+    from jarvis.ui.styles import inject_css
 
     _IMPORTS_OK = True
 except Exception as _import_err:
@@ -20,35 +22,86 @@ except Exception as _import_err:
 # ---------------------------------------------------------------------------
 st.set_page_config(
     page_title="JARVIS - 知识库",
-    page_icon="📚",
+    page_icon="../favicon.svg",
     layout="wide",
 )
+if _IMPORTS_OK:
+    inject_css()
 
-# ---------------------------------------------------------------------------
-# Custom CSS
-# ---------------------------------------------------------------------------
+# Page-specific CSS
 st.markdown("""
 <style>
-.kb-card {
-    background: white; border: 1px solid #e2e8f0; border-radius: 14px;
-    padding: 24px 28px; margin-bottom: 14px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    transition: border-color 0.2s, box-shadow 0.2s;
+/* -- Search area wrapper -- */
+.kb-search-card {
+    background: var(--jarvis-surface);
+    border: 1px solid var(--jarvis-border);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
-.kb-card:hover { border-color: #6366f1; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-.kb-card h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
-.kb-card p { font-size: 13px; color: #64748b; line-height: 1.6; margin: 0; }
-.kb-tag {
-    display: inline-block; padding: 2px 10px; border-radius: 7px;
-    font-size: 11px; font-weight: 500; margin-bottom: 8px;
+
+/* -- Search input styling -- */
+div[data-testid="stTextInput"] input {
+    border: 1.5px solid var(--jarvis-border) !important;
+    border-radius: 10px !important;
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+    transition: border-color 200ms ease, box-shadow 200ms ease !important;
 }
-.search-result-card {
-    background: white; border: 1px solid #e2e8f0; border-radius: 12px;
-    padding: 16px 20px; margin-bottom: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    transition: border-color 0.2s, box-shadow 0.2s;
+div[data-testid="stTextInput"] input:focus {
+    border-color: var(--jarvis-primary) !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.1) !important;
 }
-.search-result-card:hover { border-color: #6366f1; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+/* -- Tab styling -- */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 4px;
+    background: var(--jarvis-background);
+    border-radius: 12px;
+    padding: 4px;
+}
+.stTabs [data-baseweb="tab"] {
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--jarvis-text-secondary);
+    background: transparent;
+}
+.stTabs [aria-selected="true"] {
+    background: white !important;
+    color: var(--jarvis-primary) !important;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.stTabs [data-baseweb="tab-highlight"] {
+    display: none;
+}
+.stTabs [data-baseweb="tab-border"] {
+    display: none;
+}
+
+/* -- Expander styling -- */
+.streamlit-expanderHeader {
+    font-size: 14px !important;
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+}
+.streamlit-expanderHeader:hover {
+    background: var(--jarvis-background) !important;
+}
+
+/* -- Category tag styling -- */
+.kb-category-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--jarvis-text);
+    margin: 12px 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -78,8 +131,19 @@ with st.sidebar:
 # ---------------------------------------------------------------------------
 # Title
 # ---------------------------------------------------------------------------
-st.title("📚 知识库")
-st.markdown("浏览和搜索 JARVIS 内置的行业知识库，包含案例研究、销售方法论、行业敏感度分析和产品资料。")
+st.markdown(
+    f"""
+<div style="display:flex;align-items:center;gap:12px;padding:8px 0 4px;">
+    {icon("database", size=32, color="var(--jarvis-primary)")}
+    <div>
+        <h2 style="margin:0;font-size:24px;font-weight:700;color:var(--jarvis-text);">知识库</h2>
+        <p style="margin:4px 0 0;font-size:14px;color:var(--jarvis-text-secondary);">浏览和搜索 JARVIS 内置的行业知识库，包含案例研究、销售方法论、行业敏感度分析和产品资料</p>
+    </div>
+</div>
+""",
+    unsafe_allow_html=True,
+)
+
 st.divider()
 
 if not _IMPORTS_OK:
@@ -108,6 +172,11 @@ _TYPE_TAG_COLORS: dict[str, tuple[str, str]] = {
     "sensitivities": ("#fce7f3", "#9d174d"),
     "products": ("#d1fae5", "#065f46"),
 }
+
+st.markdown(
+    f'<p class="kb-category-label">{icon("magnifying_glass", size=16, color="var(--jarvis-primary)")} 搜索知识库</p>',
+    unsafe_allow_html=True,
+)
 
 with st.container():
     search_query = st.text_input(

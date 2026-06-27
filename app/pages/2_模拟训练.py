@@ -15,7 +15,7 @@ load_config()
 # ---------------------------------------------------------------------------
 st.set_page_config(
     page_title="JARVIS - 模拟训练",
-    page_icon="🎭",
+    page_icon="../favicon.svg",
     layout="wide",
 )
 
@@ -38,11 +38,172 @@ try:
     )
     from jarvis.generators.score_report import generate_markdown_report
     from jarvis.knowledge.loader import load_all
+    from jarvis.ui.icons import icon
+    from jarvis.ui.styles import inject_css
 
     _IMPORTS_OK = True
 except Exception as _import_err:
     _IMPORTS_OK = False
     _IMPORT_ERROR = _import_err
+
+if _IMPORTS_OK:
+    inject_css()
+
+# Page-specific CSS
+st.markdown("""
+<style>
+/* -- Config section card -- */
+.training-config-card {
+    background: var(--jarvis-surface);
+    border: 1px solid var(--jarvis-border);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.training-config-card h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--jarvis-text);
+    margin: 0 0 12px 0;
+}
+.training-tips-card {
+    background: var(--jarvis-background);
+    border: 1px solid var(--jarvis-border);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+}
+.training-tips-card h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--jarvis-text);
+    margin: 0 0 12px 0;
+}
+.training-tips-card ul { margin: 0; padding-left: 18px; }
+.training-tips-card li { font-size: 13px; color: var(--jarvis-text-secondary); line-height: 1.8; }
+
+/* -- Chat area -- */
+.chat-input-area {
+    background: var(--jarvis-background);
+    border: 1px solid var(--jarvis-border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+}
+
+/* -- Score page header -- */
+.score-header-card {
+    background: linear-gradient(135deg, var(--jarvis-primary) 0%, var(--jarvis-primary-light) 100%);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    color: white;
+    margin-bottom: 20px;
+}
+.score-header-card h2 { color: white !important; margin: 0 0 4px 0 !important; }
+.score-header-card p { color: rgba(255,255,255,0.85) !important; margin: 0 !important; }
+
+/* -- Training status bar -- */
+.training-status-bar {
+    background: var(--jarvis-background);
+    border: 1px solid var(--jarvis-border);
+    border-radius: var(--radius-md);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--jarvis-text-secondary);
+}
+.training-status-bar .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--jarvis-success); display: inline-block;
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* -- Chat messages -- */
+.chat-msg {
+    display: flex; gap: 12px; margin-bottom: 18px;
+    animation: fadeSlideIn 0.35s ease-out;
+}
+.chat-msg-right { flex-direction: row-reverse; }
+.avatar {
+    width: 38px; height: 38px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.avatar-customer {
+    background: linear-gradient(135deg, var(--jarvis-primary-bg) 0%, #c7d2fe 100%);
+    color: #4338ca;
+}
+.avatar-user {
+    background: linear-gradient(135deg, var(--jarvis-text) 0%, #334155 100%);
+    color: white;
+}
+.bubble-wrap { max-width: 75%; }
+.bubble-left { margin-right: auto; }
+.bubble-right { margin-left: auto; }
+.chat-bubble {
+    padding: 14px 18px; border-radius: 16px; font-size: 14px;
+    line-height: 1.7; word-wrap: break-word;
+}
+.chat-customer {
+    background: var(--jarvis-background); border: 1px solid var(--jarvis-border);
+    border-bottom-left-radius: 4px;
+}
+.chat-user {
+    background: linear-gradient(135deg, var(--jarvis-primary) 0%, var(--jarvis-primary-light) 100%);
+    color: white; border-bottom-right-radius: 4px;
+}
+.chat-time {
+    font-size: 11px; color: var(--jarvis-text-muted); margin-top: 4px; padding-left: 4px;
+}
+.chat-time-right { text-align: right; padding-right: 4px; }
+
+/* -- Score bars -- */
+.score-bar-wrap {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+}
+.score-label { font-size: 13px; color: var(--jarvis-text-secondary); width: 80px; font-weight: 500; }
+.score-track {
+    flex: 1; height: 8px; background: var(--jarvis-background);
+    border-radius: 4px; overflow: hidden;
+}
+.score-fill {
+    height: 100%; border-radius: 4px;
+    animation: barGrow 0.8s ease-out;
+}
+.score-val { font-size: 14px; font-weight: 600; width: 30px; text-align: right; }
+
+/* -- Boxes -- */
+.warning-box {
+    background: var(--jarvis-warning-bg); border: 1px solid rgba(245,158,11,0.3);
+    border-radius: 12px; padding: 16px 20px; color: #92400e;
+}
+.score-card {
+    background: var(--jarvis-surface); border: 1px solid var(--jarvis-border); border-radius: var(--radius-lg);
+    padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* -- Animations -- */
+@keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes barGrow {
+    from { width: 0 !important; }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+</style>
+""", unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------------------------
@@ -67,13 +228,13 @@ def _render_radar_svg(scores: list, size: int = 260) -> str:
             f"{_point(i, radius * pct)[0]:.1f},{_point(i, radius * pct)[1]:.1f}"
             for i in range(n)
         )
-        grid_lines += f'<polygon points="{pts}" fill="none" stroke="#e2e8f0" stroke-width="1"/>'
+        grid_lines += f'<polygon points="{pts}" fill="none" stroke="var(--jarvis-border)" stroke-width="1"/>'
 
     # Axis lines
     axis_lines = ""
     for i in range(n):
         px, py = _point(i, radius)
-        axis_lines += f'<line x1="{cx}" y1="{cy}" x2="{px:.1f}" y2="{py:.1f}" stroke="#e2e8f0" stroke-width="1"/>'
+        axis_lines += f'<line x1="{cx}" y1="{cy}" x2="{px:.1f}" y2="{py:.1f}" stroke="var(--jarvis-border)" stroke-width="1"/>'
 
     # Data polygon
     data_pts = " ".join(
@@ -81,8 +242,8 @@ def _render_radar_svg(scores: list, size: int = 260) -> str:
         for i, s in enumerate(scores)
     )
     data_polygon = (
-        f'<polygon points="{data_pts}" fill="rgba(99,102,241,0.15)" '
-        f'stroke="#6366f1" stroke-width="2.5"/>'
+        f'<polygon points="{data_pts}" fill="var(--jarvis-primary-bg)" '
+        f'stroke="var(--jarvis-primary)" stroke-width="2.5"/>'
     )
 
     # Data dots
@@ -102,7 +263,7 @@ def _render_radar_svg(scores: list, size: int = 260) -> str:
             anchor = "start"
         labels += (
             f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" '
-            f'font-size="11" font-weight="500" fill="#475569">{s.label}</text>'
+            f'font-size="11" font-weight="500" fill="var(--jarvis-text-secondary)">{s.label}</text>'
         )
         # Score value below label
         labels += (
@@ -147,91 +308,6 @@ def _render_chat_bubble(role: str, content: str, timestamp: str = "") -> str:
         f'</div></div>'
     )
 
-
-# ---------------------------------------------------------------------------
-# Custom CSS
-# ---------------------------------------------------------------------------
-st.markdown("""
-<style>
-/* -- Chat messages -- */
-.chat-msg {
-    display: flex; gap: 12px; margin-bottom: 18px;
-    animation: fadeSlideIn 0.35s ease-out;
-}
-.chat-msg-right { flex-direction: row-reverse; }
-.avatar {
-    width: 38px; height: 38px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 700; flex-shrink: 0;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-.avatar-customer {
-    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-    color: #4338ca;
-}
-.avatar-user {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    color: white;
-}
-.bubble-wrap { max-width: 75%; }
-.bubble-left { margin-right: auto; }
-.bubble-right { margin-left: auto; }
-.chat-bubble {
-    padding: 14px 18px; border-radius: 16px; font-size: 14px;
-    line-height: 1.7; word-wrap: break-word;
-}
-.chat-customer {
-    background: #f8fafc; border: 1px solid #e2e8f0;
-    border-bottom-left-radius: 4px;
-}
-.chat-user {
-    background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
-    color: white; border-bottom-right-radius: 4px;
-}
-.chat-time {
-    font-size: 11px; color: #94a3b8; margin-top: 4px; padding-left: 4px;
-}
-.chat-time-right { text-align: right; padding-right: 4px; }
-
-/* -- Score bars -- */
-.score-bar-wrap {
-    display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
-}
-.score-label { font-size: 13px; color: #64748b; width: 80px; font-weight: 500; }
-.score-track {
-    flex: 1; height: 8px; background: #f1f5f9;
-    border-radius: 4px; overflow: hidden;
-}
-.score-fill {
-    height: 100%; border-radius: 4px;
-    animation: barGrow 0.8s ease-out;
-}
-.score-val { font-size: 14px; font-weight: 600; width: 30px; text-align: right; }
-
-/* -- Boxes -- */
-.warning-box {
-    background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3);
-    border-radius: 12px; padding: 16px 20px; color: #92400e;
-}
-.score-card {
-    background: white; border: 1px solid #e2e8f0; border-radius: 16px;
-    padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-
-/* -- Animations -- */
-@keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes barGrow {
-    from { width: 0 !important; }
-}
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
-</style>
-""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
 # Database initialisation (singleton in session_state)
@@ -333,8 +409,19 @@ with st.sidebar:
 # ---------------------------------------------------------------------------
 # Title
 # ---------------------------------------------------------------------------
-st.title("🎭 模拟训练")
-st.markdown("与 AI 客户进行真实场景的多轮对话训练，提升售前沟通能力。")
+st.markdown(
+    f"""
+<div style="display:flex;align-items:center;gap:12px;padding:8px 0 4px;">
+    {icon("chat_dots", size=32, color="var(--jarvis-primary)")}
+    <div>
+        <h2 style="margin:0;font-size:24px;font-weight:700;color:var(--jarvis-text);">模拟训练</h2>
+        <p style="margin:4px 0 0;font-size:14px;color:var(--jarvis-text-secondary);">与 AI 客户进行真实场景的多轮对话训练，提升售前沟通能力</p>
+    </div>
+</div>
+""",
+    unsafe_allow_html=True,
+)
+
 st.divider()
 
 if not _IMPORTS_OK:
@@ -417,21 +504,27 @@ if phase == "config":
 
     with col2:
         # Stats
+        st.markdown('<div class="training-config-card">', unsafe_allow_html=True)
+        st.markdown('<h4>训练统计</h4>', unsafe_allow_html=True)
         mc1, mc2, mc3 = st.columns(3)
         past_count = st.session_state.get("past_training_count", 0)
         past_avg = st.session_state.get("past_avg_score", 0)
         mc1.metric("已完成训练", str(past_count))
         mc2.metric("历史均分", str(past_avg) if past_avg else "—")
         mc3.metric("训练模块", "MVP")
+        st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown("""
-#### 训练建议
-
-- **开场**：先了解客户业务背景，再逐步深入技术细节
-- **异议处理**：先认可客户顾虑，再用行业案例回应
-- **收尾**：明确下一步行动，推动销售进程
-- **提问**：围绕 environment / time / asset / budget 四个维度
-        """)
+<div class="training-tips-card">
+<h4>训练建议</h4>
+<ul>
+<li><b>开场</b>：先了解客户业务背景，再逐步深入技术细节</li>
+<li><b>异议处理</b>：先认可客户顾虑，再用行业案例回应</li>
+<li><b>收尾</b>：明确下一步行动，推动销售进程</li>
+<li><b>提问</b>：围绕 environment / time / asset / budget 四个维度</li>
+</ul>
+</div>
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
 # Phase: CHATTING
@@ -449,10 +542,22 @@ elif phase == "chatting":
     ind_cn = INDUSTRY_LABELS.get(config.industry, config.industry)
     pers_cn = PERSONALITY_MAP.get(config.personality, config.personality)
 
-    # Header
-    cols_h = st.columns([3, 1])
-    with cols_h[0]:
-        st.markdown(f"**模拟训练进行中** — {ind_cn} · {config.scenario} · {pers_cn} · {len(msgs)} 条消息")
+    # Status bar
+    st.markdown(
+        f"""
+<div class="training-status-bar">
+    <span class="status-dot"></span>
+    <span><b>模拟训练进行中</b></span>
+    <span>{icon("compass", size=14, color="var(--jarvis-text-secondary)")} {ind_cn}</span>
+    <span>{icon("target", size=14, color="var(--jarvis-text-secondary)")} {SCENARIO_LABELS.get(config.scenario, config.scenario)}</span>
+    <span>{icon("chat_dots", size=14, color="var(--jarvis-text-secondary)")} {pers_cn}</span>
+    <span>{icon("info", size=14, color="var(--jarvis-text-secondary)")} {len(msgs)} 条消息</span>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+    cols_h = st.columns([5, 1])
     with cols_h[1]:
         if st.button("结束训练", type="secondary", use_container_width=True):
             with st.spinner("AI 正在评估你的表现..."):
@@ -535,9 +640,15 @@ elif phase == "scored":
         st.session_state["training_phase"] = "config"
         st.rerun()
 
-    st.markdown("## 训练评分")
-    st.markdown("基于本次对话的 AI 综合评估")
-    st.divider()
+    st.markdown(
+        f"""
+<div class="score-header-card">
+    <h2>训练评分</h2>
+    <p>基于本次对话的 AI 综合评估 · 综合得分 <b>{result.avg_score}</b> 分</p>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
     col1, col2 = st.columns([3, 2])
 
@@ -565,9 +676,9 @@ elif phase == "scored":
             )
 
         st.markdown(f"""
-<div style="margin-top:20px;padding-top:20px;border-top:1px solid #e2e8f0;
+<div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--jarvis-border);
 display:flex;justify-content:space-between;align-items:center;">
-<span style="font-size:14px;color:#64748b;">综合评分</span>
+<span style="font-size:14px;color:var(--jarvis-text-secondary);">综合评分</span>
 <span style="font-size:32px;font-weight:700;">{result.avg_score}</span>
 </div>
 """, unsafe_allow_html=True)
@@ -592,7 +703,7 @@ display:flex;justify-content:space-between;align-items:center;">
     report_md = generate_markdown_report(session_data)
     filename = f"训练报告_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
     st.download_button(
-        label="📄 导出报告",
+        label="导出报告",
         data=report_md,
         file_name=filename,
         mime="text/markdown",

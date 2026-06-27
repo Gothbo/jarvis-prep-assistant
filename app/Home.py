@@ -14,7 +14,7 @@ load_config()
 
 st.set_page_config(
     page_title="JARVIS - 智能 Prep 助手",
-    page_icon="🛡️",
+    page_icon="favicon.svg",
     layout="wide",
 )
 
@@ -59,13 +59,13 @@ div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has(button)
 with st.sidebar:
     st.markdown(
         f'<div style="display:flex;align-items:center;gap:10px;padding:8px 0;">'
-        f'{icon("shield_check", size=28, color="#6366f1")}'
-        f'<span style="font-size:20px;font-weight:700;color:#1e293b;">JARVIS</span>'
+        f'{icon("shield_check", size=28, color="var(--jarvis-primary)")}'
+        f'<span style="font-size:20px;font-weight:700;color:var(--jarvis-text);">JARVIS</span>'
         f"</div>",
         unsafe_allow_html=True,
     )
     st.markdown(
-        '<p style="font-size:13px;color:#64748b;margin-top:-8px;">AI 驱动的销售拜访准备助手</p>',
+        '<p style="font-size:13px;color:var(--jarvis-text-secondary);margin-top:-8px;">AI 驱动的销售拜访准备助手</p>',
         unsafe_allow_html=True,
     )
     st.divider()
@@ -91,19 +91,19 @@ with st.sidebar:
 # ---------------------------------------------------------------------------
 # Hero section
 # ---------------------------------------------------------------------------
-hero_icon = icon("shield_check", size=48, color="#6366f1")
+hero_icon = icon("shield_check", size=48, color="var(--jarvis-primary)")
 
 st.markdown(
     f"""
 <div style="text-align:center; padding:48px 20px 32px;">
     <div style="margin-bottom:12px;">{hero_icon}</div>
-    <h1 style="font-size:36px; font-weight:800; margin-bottom:8px; color:#1e293b;">
+    <h1 style="font-size:36px; font-weight:800; margin-bottom:8px; color:var(--jarvis-text);">
         JARVIS
     </h1>
-    <p style="font-size:18px; color:#64748b; margin-bottom:4px;">
+    <p style="font-size:18px; color:var(--jarvis-text-secondary); margin-bottom:4px;">
         AI 驱动的销售拜访准备助手
     </p>
-    <p style="font-size:14px; color:#94a3b8;">
+    <p style="font-size:14px; color:var(--jarvis-text-muted);">
         融合行业知识库、威胁情报和 AI 洞察，为客户拜访做好充分准备
     </p>
 </div>

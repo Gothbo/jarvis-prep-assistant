@@ -111,6 +111,36 @@ h1, h2, h3, h4 {
     color: var(--jarvis-primary);
     text-decoration: none;
 }
+/* ── Text Area ─────────────────────────────────────────────────── */
+div[data-testid="stTextArea"] textarea {
+    border: 1.5px solid var(--jarvis-border) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--jarvis-surface) !important;
+    padding: var(--space-3) var(--space-4) !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    color: var(--jarvis-text) !important;
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+div[data-testid="stTextArea"] textarea:focus {
+    border-color: var(--jarvis-primary) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+div[data-testid="stTextArea"] textarea::placeholder {
+    color: var(--jarvis-text-muted) !important;
+}
+
+/* ── Section Label ─────────────────────────────────────────────── */
+.jarvis-section-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--jarvis-text);
+    margin: var(--space-5) 0 var(--space-3) 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
 /* Card overlay CSS is injected per-page, not globally, because different
  * pages have different horizontal-block layouts. See Home.py and Prep.py. */
 
@@ -246,6 +276,10 @@ h1, h2, h3, h4 {
 .jarvis-step--pending {
     color: var(--jarvis-text-muted);
 }
+.jarvis-step--warning {
+    color: var(--jarvis-warning);
+    background: var(--jarvis-warning-bg);
+}
 
 /* ── Hide Streamlit defaults ───────────────────────────────────── */
 #MainMenu, header {visibility: hidden;}
@@ -354,13 +388,14 @@ def step_item(label: str, status: str = "pending", detail: str = "") -> str:
 
     Args:
         label: Step name
-        status: "done" | "active" | "pending"
+        status: "done" | "active" | "pending" | "warning"
         detail: Optional detail text
     """
     icons_map = {
         "done": icon("check_circle", size=18, color="var(--jarvis-success)"),
         "active": icon("lightning", size=18, color="var(--jarvis-primary)"),
         "pending": icon("info", size=18, color="var(--jarvis-text-muted)"),
+        "warning": icon("warning_diamond", size=18, color="var(--jarvis-warning)"),
     }
     step_icon = icons_map.get(status, icons_map["pending"])
     detail_html = f'<span style="margin-left:auto;font-size:12px;color:var(--jarvis-text-muted);">{detail}</span>' if detail else ""

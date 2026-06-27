@@ -42,7 +42,7 @@ except Exception as _import_err:
 # ---------------------------------------------------------------------------
 st.set_page_config(
     page_title="JARVIS - 智能 Prep",
-    page_icon="🛡️",
+    page_icon="../favicon.svg",
     layout="wide",
 )
 inject_css()
@@ -83,13 +83,13 @@ div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:has(.stTooltipI
 with st.sidebar:
     st.markdown(
         f'<div style="display:flex;align-items:center;gap:10px;padding:8px 0;">'
-        f'{icon("shield_check", size=28, color="#6366f1")}'
-        f'<span style="font-size:20px;font-weight:700;color:#1e293b;">JARVIS</span>'
+        f'{icon("shield_check", size=28, color="var(--jarvis-primary)")}'
+        f'<span style="font-size:20px;font-weight:700;color:var(--jarvis-text);">JARVIS</span>'
         f"</div>",
         unsafe_allow_html=True,
     )
     st.markdown(
-        '<p style="font-size:13px;color:#64748b;margin-top:-8px;">AI 驱动的销售拜访准备助手</p>',
+        '<p style="font-size:13px;color:var(--jarvis-text-secondary);margin-top:-8px;">AI 驱动的销售拜访准备助手</p>',
         unsafe_allow_html=True,
     )
     st.divider()
@@ -115,10 +115,10 @@ with st.sidebar:
 st.markdown(
     f"""
 <div style="display:flex;align-items:center;gap:12px;padding:8px 0 4px;">
-    {icon("shield_check", size=32, color="#6366f1")}
+    {icon("shield_check", size=32, color="var(--jarvis-primary)")}
     <div>
-        <h2 style="margin:0;font-size:24px;font-weight:700;color:#1e293b;">智能 Prep</h2>
-        <p style="margin:4px 0 0;font-size:14px;color:#64748b;">为你的客户拜访生成结构化 Prep 包</p>
+        <h2 style="margin:0;font-size:24px;font-weight:700;color:var(--jarvis-text);">智能 Prep</h2>
+        <p style="margin:4px 0 0;font-size:14px;color:var(--jarvis-text-secondary);">为你的客户拜访生成结构化 Prep 包</p>
     </div>
 </div>
 """,
@@ -131,8 +131,8 @@ st.divider()
 # Template Selection
 # ---------------------------------------------------------------------------
 st.markdown(
-    f'<p style="font-size:14px;font-weight:600;color:#1e293b;margin-bottom:8px;">'
-    f'{icon("compass", size=16, color="#6366f1")} 选择场景模板或自由描述</p>',
+    f'<p class="jarvis-section-label">'
+    f'{icon("compass", size=16, color="var(--jarvis-primary)")} 选择场景模板或自由描述</p>',
     unsafe_allow_html=True,
 )
 
@@ -169,7 +169,7 @@ TEMPLATES = [
     },
 ]
 
-template_cols = st.columns(5, gap="small")
+template_cols = st.columns(5, gap="medium")
 selected_template = st.session_state.get("selected_template", "")
 
 for i, (col, tmpl) in enumerate(zip(template_cols, TEMPLATES)):
@@ -201,12 +201,18 @@ for i, (col, tmpl) in enumerate(zip(template_cols, TEMPLATES)):
 # ---------------------------------------------------------------------------
 # Input Area
 # ---------------------------------------------------------------------------
+st.markdown(
+    f'<p class="jarvis-section-label">'
+    f'{icon("target", size=16, color="var(--jarvis-primary)")} 描述拜访场景</p>',
+    unsafe_allow_html=True,
+)
+
 default_text = st.session_state.get("prep_input", "")
 user_input = st.text_area(
     "描述拜访场景",
     value=default_text,
     placeholder="例如：明天拜访一家制造业客户，他们的产线刚遭受勒索软件攻击",
-    height=80,
+    height=120,
     label_visibility="collapsed",
 )
 # Sync template selection with text area changes
@@ -215,6 +221,12 @@ if user_input != default_text:
     st.session_state["selected_template"] = "custom"
 
 # Industry quick tags
+st.markdown(
+    f'<p class="jarvis-section-label">'
+    f'{icon("database", size=16, color="var(--jarvis-primary)")} 快速选择行业</p>',
+    unsafe_allow_html=True,
+)
+
 industry_cols = st.columns(7, gap="small")
 industries = ["制造业", "金融", "医疗", "政府", "教育", "能源", "零售"]
 for col, label in zip(industry_cols, industries):
@@ -227,14 +239,16 @@ for col, label in zip(industry_cols, industries):
 st.divider()
 
 # ---------------------------------------------------------------------------
-# Generate Button + Step Progress
+# Generate Button
 # ---------------------------------------------------------------------------
-generate_clicked = st.button(
-    "生成 Prep 包",
-    type="primary",
-    disabled=not user_input,
-    use_container_width=True,
-)
+gen_left, gen_center, gen_right = st.columns([1, 2, 1])
+with gen_center:
+    generate_clicked = st.button(
+        "生成 Prep 包",
+        type="primary",
+        disabled=not user_input,
+        use_container_width=True,
+    )
 
 if generate_clicked:
     if not _IMPORTS_OK:
@@ -246,7 +260,7 @@ if generate_clicked:
 
             # Step 1: Intent recognition
             st.write(
-                f"{icon('lightning', size=14, color='#6366f1')} 识别行业与场景…"
+                f"{icon('lightning', size=14, color='var(--jarvis-primary)')} 识别行业与场景…"
             )
             try:
                 kb = load_all()
@@ -261,7 +275,7 @@ if generate_clicked:
 
             # Step 2: Knowledge retrieval
             st.write(
-                f"{icon('database', size=14, color='#6366f1')} 检索知识库…"
+                f"{icon('database', size=14, color='var(--jarvis-primary)')} 检索知识库…"
             )
             matched_count = "匹配中"
             try:
@@ -272,7 +286,7 @@ if generate_clicked:
 
             # Step 3: Generate Prep package
             st.write(
-                f"{icon('rocket', size=14, color='#6366f1')} 生成 Prep 包…"
+                f"{icon('rocket', size=14, color='var(--jarvis-primary)')} 生成 Prep 包…"
             )
             try:
                 pkg = generate_prep(intent, kb)
@@ -284,7 +298,7 @@ if generate_clicked:
 
             # Step 4: Threat intel
             st.write(
-                f"{icon('magnifying_glass', size=14, color='#6366f1')} 拉取威胁情报…"
+                f"{icon('magnifying_glass', size=14, color='var(--jarvis-primary)')} 拉取威胁情报…"
             )
             try:
                 pkg.threat_intel = fetch_threats(intent.industry)
@@ -348,16 +362,16 @@ if pkg is not None:
     # ── Section 1: Core Prep (expanded) ────────────────────────────────
     core_content = f"""
 <div style="margin-bottom:16px;">
-    <p style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">场景判断</p>
-    <p style="font-size:14px;line-height:1.7;color:#1e293b;">{pkg.scenario_assessment}</p>
+    <p style="font-size:13px;font-weight:600;color:var(--jarvis-text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">场景判断</p>
+    <p style="font-size:14px;line-height:1.7;color:var(--jarvis-text);">{pkg.scenario_assessment}</p>
 </div>
 <div style="margin-bottom:16px;">
-    <p style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">方案方向</p>
-    <p style="font-size:14px;line-height:1.7;color:#1e293b;">{pkg.solution_direction}</p>
+    <p style="font-size:13px;font-weight:600;color:var(--jarvis-text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">方案方向</p>
+    <p style="font-size:14px;line-height:1.7;color:var(--jarvis-text);">{pkg.solution_direction}</p>
 </div>
 <div>
-    <p style="font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">话术要点</p>
-    <p style="font-size:14px;line-height:1.7;color:#1e293b;">{pkg.talking_points}</p>
+    <p style="font-size:13px;font-weight:600;color:var(--jarvis-text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">话术要点</p>
+    <p style="font-size:14px;line-height:1.7;color:var(--jarvis-text);">{pkg.talking_points}</p>
 </div>
 """
     st.markdown(
