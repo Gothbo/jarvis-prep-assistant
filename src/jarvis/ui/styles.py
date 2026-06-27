@@ -8,6 +8,7 @@ Usage:
 """
 
 import streamlit as st
+
 from jarvis.ui.icons import icon
 
 
