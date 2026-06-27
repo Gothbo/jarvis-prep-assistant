@@ -11,7 +11,6 @@ import streamlit as st
 
 from jarvis.ui.icons import icon
 
-
 # ── CSS Tokens & Global Styles ──────────────────────────────────────────────
 
 _GLOBAL_CSS = """
