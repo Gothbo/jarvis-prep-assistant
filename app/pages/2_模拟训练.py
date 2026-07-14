@@ -596,12 +596,13 @@ elif phase == "chatting":
 
     st.divider()
 
-    # Input
+    # Input — use dynamic key so input clears after each send
+    _msg_counter = st.session_state.get("training_msg_counter", 0)
     col_in, col_send = st.columns([6, 1])
     with col_in:
         user_input = st.text_input(
             "输入回复",
-            key="training_input",
+            key=f"training_input_{_msg_counter}",
             label_visibility="collapsed",
             placeholder="输入你的回复...",
         )
@@ -627,6 +628,9 @@ elif phase == "chatting":
         st.session_state["training_saved_msg_count"] = _save_new_msgs(
             _db, _sid, msgs, _saved
         )
+
+        # Increment counter so next rerun uses a new key → empty input box
+        st.session_state["training_msg_counter"] = _msg_counter + 1
 
         st.rerun()
 
