@@ -33,7 +33,7 @@ JARVIS 是一款面向网络安全产品销售人员的 AI 售前准备助手。
 
 - **智能意图识别** — 基于行业关键词与场景描述，自动解析客户痛点、采购阶段和决策角色，精准定位售前策略方向。
 - **领域知识检索** — 集成 ChromaDB 向量数据库，对安全产品知识库、行业威胁情报进行语义检索，确保生成内容有据可依。
-- **LLM + 规则引擎双保险** — 优先调用 OpenAI GPT-4o-mini 生成高质量内容；当 API 不可用时，自动回退至规则引擎兜底，保障系统可用性。
+- **LLM + 规则引擎双保险** — 双引擎并行执行（speculative execution）：规则引擎 ~50ms 出基线结果，DeepSeek LLM ~15-30s 出深度分析，结果融合后输出最优方案；LLM 不可用时自动降级为纯规则引擎。
 - **结构化 Prep 包输出** — 生成包含客户痛点分析、产品卖点匹配、竞品对比、FAQ 预判在内的完整售前准备文档。
 - **PPT 大纲一键生成** — 根据 Prep 包内容自动编排演示文稿大纲，支持按方法论（SPIN / Challenger Sale）灵活调整叙事结构。
 
@@ -51,8 +51,8 @@ flowchart LR
     C1 --> D["🤖 内容生成引擎"]
     C2 --> D
 
-    D --> D1["LLM 引擎\nOpenAI GPT-4o-mini"]
-    D --> D2["规则引擎兜底\nRule-based Fallback"]
+    D --> D1["双引擎并行\nDeepSeek LLM + 规则引擎"]
+    D --> D2["结果融合\nSynthesis"]
 
     D1 --> E["📦 Prep 准备包\nPrep Package"]
     D2 --> E
@@ -75,7 +75,7 @@ flowchart LR
 | **数据模型** | Pydantic v2 | 强类型校验 + JSON Schema 自动生成，与 LLM 结构化输出无缝衔接 | dataclasses（轻量但缺乏校验） |
 | **UI 框架** | Streamlit | 零前端代码快速搭建数据应用，原生支持组件交互与实时预览 | Gradio（更适合 ML Demo）、FastAPI + React（重） |
 | **向量检索** | ChromaDB | 轻量嵌入式向量数据库，零运维，适合中小规模知识库 | FAISS（纯索引无元数据）、Milvus（运维成本高） |
-| **LLM** | OpenAI GPT-4o-mini | 性价比高，响应速度快，中文能力满足售前文案需求 | Claude（中文略弱）、本地部署 Qwen（算力成本高） |
+| **LLM** | DeepSeek Chat | 国产大模型，API 兼容 OpenAI 格式，中文能力强，性价比高 | OpenAI GPT-4o-mini（需翻墙）、本地部署 Qwen（算力成本高） |
 | **中文分词** | jieba | 成熟稳定的中文分词方案，开箱即用，适合关键词提取场景 | pkuseg（领域适配需训练）、HanLP（较重） |
 | **测试框架** | pytest + pytest-cov | 业界标准测试框架，插件生态丰富，覆盖率报告集成方便 | unittest（内置但冗长） |
 | **代码规范** | Ruff | 极速 Python Linter，替代 Flake8 + isort + Black，CI 友好 | Black + Flake8（工具链分散） |
@@ -85,7 +85,7 @@ flowchart LR
 ### 环境要求
 
 - Python 3.11 及以上
-- OpenAI API Key
+- DeepSeek API Key（https://platform.deepseek.com 注册获取）
 
 ### 安装与运行
 
@@ -105,9 +105,11 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 
 # 4. 配置 API Key
-# 在 .streamlit/secrets.toml 中设置：
-# [openai]
-# api_key = "sk-your-api-key-here"
+cp .env.example .env
+# 编辑 .env 填入你的 DeepSeek API Key:
+# LLM_API_KEY=sk-your-api-key-here
+# LLM_BASE_URL=https://api.deepseek.com/v1
+# LLM_MODEL=deepseek-chat
 
 # 5. 构建知识库索引
 python scripts/build_index.py

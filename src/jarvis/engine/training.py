@@ -193,12 +193,12 @@ Rules:
 
     client = OpenAI(
         api_key=api_key,
-        base_url=os.getenv("LLM_BASE_URL", "https://api.openai.com/v1"),
+        base_url=os.getenv("LLM_BASE_URL", "https://api.deepseek.com/v1"),
         timeout=float(os.getenv("LLM_TIMEOUT", "8.0")),
     )
 
     response = client.chat.completions.create(
-        model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
+        model=os.getenv("LLM_MODEL", "deepseek-chat"),
         messages=messages,
         temperature=0.9,
         max_tokens=200,
@@ -305,12 +305,12 @@ Respond ONLY with valid JSON."""
 
     client = OpenAI(
         api_key=api_key,
-        base_url=os.getenv("LLM_BASE_URL", "https://api.openai.com/v1"),
+        base_url=os.getenv("LLM_BASE_URL", "https://api.deepseek.com/v1"),
         timeout=float(os.getenv("LLM_TIMEOUT", "10.0")),
     )
 
     response = client.chat.completions.create(
-        model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
+        model=os.getenv("LLM_MODEL", "deepseek-chat"),
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         temperature=0.3,

@@ -1,8 +1,19 @@
-"""智能售前准备 API"""
-import asyncio
+"""智能售前准备 API — 接入双引擎核心，生成真实 Prep 包"""
+
+import sys
+from pathlib import Path
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
+
+# 确保 jarvis 模块可被找到
+SRC_DIR = Path(__file__).resolve().parent.parent.parent
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+from jarvis.engine.hybrid_engine import generate_prep_hybrid  # noqa: E402
+from jarvis.engine.intent import recognize  # noqa: E402
+from jarvis.knowledge.loader import load_all  # noqa: E402
 
 router = APIRouter()
 
@@ -19,23 +30,66 @@ class SmartPrepResponse(BaseModel):
     key_points: list[str]
     products: list[str]
     next_steps: str
+    # 双引擎扩展字段
+    engine_mode: str = Field(default="hybrid", description="生成模式: hybrid | rule_only")
+    sensitivity_alerts: list[str] = Field(default_factory=list)
+    follow_up_questions: list[str] = Field(default_factory=list)
+    solution_direction: str = ""
+    talking_points: str = ""
+    solution_outline: list[str] = Field(default_factory=list)
 
 
 @router.post("/generate", response_model=SmartPrepResponse)
 async def generate_prep(request: SmartPrepRequest):
-    """根据客户场景生成售前准备方案"""
-    # 模拟生成延迟
-    await asyncio.sleep(1.5)
+    """根据客户场景生成售前准备方案（双引擎并行生成）"""
+    # 意图识别
+    intent = recognize(request.scenario)
+    if request.industry:
+        intent = intent.__class__(
+            industry=request.industry,
+            scenario=intent.scenario,
+            raw_input=request.scenario,
+        )
+
+    # 加载知识库
+    kb = load_all()
+
+    # 双引擎并行生成（在线程中运行，避免与 FastAPI 事件循环冲突）
+    import asyncio
+    pkg, mode = await asyncio.to_thread(
+        generate_prep_hybrid, intent, kb, 30.0
+    )
+
+    # 保存到历史记录
+    try:
+        from jarvis_app.routers.history import save_prep_record
+        await save_prep_record(
+            industry=intent.industry or "unknown",
+            scenario=request.scenario,
+            engine_mode=mode,
+            summary=pkg.scenario_assessment[:500],
+        )
+    except Exception:
+        pass  # 历史记录保存失败不影响主流程
+
+    # 从 solution_direction 中提取产品名（简单启发式）
+    products = []
+    for line in (pkg.solution_direction or "").split("\n"):
+        line = line.strip()
+        if line.startswith("Product:") or line.startswith("产品:"):
+            products.append(line.split(":", 1)[-1].strip())
 
     return SmartPrepResponse(
-        industry=request.industry or "金融",
-        scenario=request.scenario[:30] + "..." if len(request.scenario) > 30 else request.scenario,
-        summary="针对某金融机构移动银行应用的售前准备方案，涵盖API安全防护、数据隐私保护与合规审计三大核心需求。",
-        key_points=[
-            "客户面临移动银行API安全风险、权限管理混乱、合规审计差距三大核心痛点",
-            "推荐方案组合：WAF/Web防护 + 零信任架构 + XDR/SIEM平台",
-            "竞争优势：全栈国产化、金融行业最佳实践、6个月内可通过审计"
-        ],
-        products=["WAF/Web安全防护", "零信任安全架构", "XDR/SIEM 解决方案"],
-        next_steps="建议安排一次技术交流会，针对客户现有IT环境进行兼容性评估，并输出详细的实施路线图。"
+        industry=intent.industry or "unknown",
+        scenario=request.scenario[:100],
+        summary=pkg.scenario_assessment,
+        key_points=pkg.sensitivity_alerts[:5],
+        products=products or ["(见方案方向)"],
+        next_steps=pkg.talking_points[:500] if pkg.talking_points else "",
+        engine_mode=mode,
+        sensitivity_alerts=pkg.sensitivity_alerts,
+        follow_up_questions=pkg.follow_up_questions,
+        solution_direction=pkg.solution_direction,
+        talking_points=pkg.talking_points,
+        solution_outline=pkg.solution_outline,
     )

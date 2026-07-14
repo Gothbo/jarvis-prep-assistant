@@ -21,8 +21,8 @@ def _get_llm_config() -> dict[str, str]:
     """Read LLM config from environment at call time (supports lazy init)."""
     return {
         "api_key": os.getenv("LLM_API_KEY", ""),
-        "base_url": os.getenv("LLM_BASE_URL", "https://api.openai.com/v1"),
-        "model": os.getenv("LLM_MODEL", "gpt-4o-mini"),
+        "base_url": os.getenv("LLM_BASE_URL", "https://api.deepseek.com/v1"),
+        "model": os.getenv("LLM_MODEL", "deepseek-chat"),
         "timeout": float(os.getenv("LLM_TIMEOUT", "8.0")),
     }
 
