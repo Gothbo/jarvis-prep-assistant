@@ -107,3 +107,30 @@ retail:
   - 电商
   - 购物
   - 消费
+
+# Scenario keyword patterns for intent matching (extracted from intent.py).
+scenario_keywords:
+  ransomware:
+    - 勒索
+    - 加密
+    - 锁
+    - ransomware
+    - ransom
+  data_leak:
+    - 泄露
+    - 泄漏
+    - 数据泄露
+    - data leak
+    - breach
+  compliance:
+    - 合规
+    - 审计
+    - compliance
+    - audit
+  apt:
+    - apt
+    - 高级威胁
+    - 持久威胁
+  phishing:
+    - 钓鱼
+    - phishing

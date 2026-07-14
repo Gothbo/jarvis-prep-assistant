@@ -1,5 +1,6 @@
 """Intent and industry recognition from natural language input."""
 
+import functools
 import logging
 from dataclasses import dataclass
 
@@ -19,8 +20,12 @@ class IntentResult:
     raw_input: str = ""
 
 
+@functools.lru_cache(maxsize=1)
 def _load_keyword_map() -> dict[str, list[str]]:
-    """Load industry keyword mapping from YAML config."""
+    """Load industry keyword mapping from YAML config.
+
+    Cached to avoid re-reading the YAML file on every call.
+    """
     config_path = DICT_DIR / "industry_keywords.yaml"
     if not config_path.exists():
         logger.warning("Industry keyword config not found: %s", config_path)
@@ -30,15 +35,31 @@ def _load_keyword_map() -> dict[str, list[str]]:
         return yaml.safe_load(f) or {}
 
 
-def _build_reverse_map(
-    keyword_map: dict[str, list[str]],
-) -> dict[str, str]:
-    """Build reverse mapping: keyword -> industry."""
+@functools.lru_cache(maxsize=1)
+def _build_reverse_map() -> dict[str, str]:
+    """Build reverse mapping: keyword -> industry.
+
+    Cached since the underlying keyword_map is also cached and immutable at runtime.
+    Calls _load_keyword_map() internally to avoid passing unhashable dict as argument.
+    """
+    keyword_map = _load_keyword_map()
     reverse = {}
     for industry, keywords in keyword_map.items():
+        if industry == "scenario_keywords":
+            continue  # Skip non-industry keys
         for kw in keywords:
             reverse[kw.lower()] = industry
     return reverse
+
+
+@functools.lru_cache(maxsize=1)
+def _load_scenario_keywords() -> dict[str, list[str]]:
+    """Load scenario keyword patterns from YAML config.
+
+    Cached to avoid re-reading the YAML file on every call.
+    """
+    raw = _load_keyword_map()
+    return raw.get("scenario_keywords", {})
 
 
 def recognize(text: str) -> IntentResult:
@@ -53,30 +74,24 @@ def recognize(text: str) -> IntentResult:
         jieba = None
 
     keyword_map = _load_keyword_map()
-    reverse_map = _build_reverse_map(keyword_map)
+    reverse_map = _build_reverse_map()
 
     # Segment input text
     if jieba:
-        words = set(jieba.cut(text))
+        words = list(jieba.cut(text))
     else:
-        words = set(text.lower().split())
+        words = text.lower().split()
 
-    # Match industry
+    # Match industry (iterate in text order so earlier words get priority)
     matched_industry = None
     for word in words:
-        word_lower = word.lower()
+        word_lower = word.lower().strip()
         if word_lower in reverse_map:
             matched_industry = reverse_map[word_lower]
             break
 
-    # Match scenario via keyword patterns
-    scenario_keywords = {
-        "ransomware": ["勒索", "加密", "锁", "ransomware", "ransom"],
-        "data_leak": ["泄露", "泄漏", "数据泄露", "data leak", "breach"],
-        "compliance": ["合规", "审计", "compliance", "audit"],
-        "apt": ["apt", "高级威胁", "持久威胁"],
-        "phishing": ["钓鱼", "phishing"],
-    }
+    # Match scenario via keyword patterns (loaded from YAML config)
+    scenario_keywords = _load_scenario_keywords()
 
     matched_scenario = None
     text_lower = text.lower()

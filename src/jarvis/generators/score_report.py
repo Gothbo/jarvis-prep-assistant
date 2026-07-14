@@ -38,6 +38,15 @@ _IMPROVEMENT_TIPS: dict[str, str] = {
     ),
 }
 
+# Internal label lookup for dimension keys (used in improvement section).
+_DIM_LABELS: dict[str, str] = {
+    "opening": "开场能力",
+    "discovery": "需求挖掘",
+    "objection": "异议处理",
+    "solution": "方案呈现",
+    "closing": "收尾能力",
+}
+
 
 def _get(obj: Any, attr: str, default: Any = "") -> Any:
     """Get a value from a dataclass/object or dict.
@@ -218,13 +227,3 @@ def generate_markdown_report(session_data: dict) -> str:
     sections.append("*本报告由 JARVIS 智能训练系统自动生成，仅供训练参考。*")
 
     return "\n".join(sections)
-
-
-# Internal label lookup for dimension keys (used in improvement section).
-_DIM_LABELS: dict[str, str] = {
-    "opening": "开场能力",
-    "discovery": "需求挖掘",
-    "objection": "异议处理",
-    "solution": "方案呈现",
-    "closing": "收尾能力",
-}

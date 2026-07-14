@@ -82,6 +82,33 @@ def generate_prep_fallback(intent: IntentResult, kb: KnowledgeBase) -> PrepPacka
 
     talking_points = talking_parts[0] if talking_parts else "Prepare customized talking points based on the scenario."
 
+    # Build solution outline (phased, actionable)
+    solution_outline = []
+    # Phase 1: Emergency / Assessment
+    if intent.scenario in ("ransomware", "data_leak", "breach"):
+        solution_outline.append("Phase 1 — 应急响应: 事件定级、影响面评估、止损措施（1-3 工作日）")
+    else:
+        solution_outline.append("Phase 1 — 现状评估: 资产梳理、风险排查、合规差距分析（1-2 周）")
+    # Phase 2: Core deployment
+    deploy_products = [
+        p.name for p in kb.products if intent.industry in p.applicable_industries
+    ]
+    if deploy_products:
+        solution_outline.append(
+            f"Phase 2 — 方案部署: {' + '.join(deploy_products[:3])} 部署实施、策略调优（2-4 周）"
+        )
+    else:
+        solution_outline.append("Phase 2 — 方案部署: 核心产品部署实施、策略调优（2-4 周）")
+    # Phase 3: Validation
+    solution_outline.append("Phase 3 — 验收交付: 效果验证、合规报告、运维交接（1-2 周）")
+    # Add methodology steps if available
+    for method in kb.methodologies:
+        if intent.scenario in method.applicable_scenarios and len(method.steps) > 3:
+            extra = " → ".join(s.title for s in method.steps[3:5])
+            if extra:
+                solution_outline.append(f"方法论补充: {extra}")
+            break
+
     # Scenario assessment
     urgency = "high" if intent.scenario in ("ransomware", "data_leak") else "medium"
     scenario_assessment = (
@@ -98,4 +125,5 @@ def generate_prep_fallback(intent: IntentResult, kb: KnowledgeBase) -> PrepPacka
         follow_up_questions=follow_up_questions,
         solution_direction=solution_direction,
         talking_points=talking_points,
+        solution_outline=solution_outline,
     )

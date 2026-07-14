@@ -1,5 +1,6 @@
 """Threat intelligence feed integration."""
 
+import copy
 import json
 import logging
 import os
@@ -129,8 +130,8 @@ def fetch_threats(industry: str | None) -> list[ThreatEvent]:
     except Exception:
         logger.exception("Unexpected error fetching threat intel for %s", industry)
 
-    # Fallback to sample data
-    samples = SAMPLE_THREATS.get(industry, [])
+    # Fallback to sample data — deepcopy to avoid mutating global SAMPLE_THREATS
+    samples = copy.deepcopy(SAMPLE_THREATS.get(industry, []))
     for s in samples:
         s.title = f"[Sample] {s.title}"
     return samples

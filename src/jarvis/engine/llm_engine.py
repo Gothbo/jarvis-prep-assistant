@@ -64,6 +64,7 @@ def _parse_partial_json(data: dict) -> PrepPackage:
         "follow_up_questions": [],
         "solution_direction": "Solution direction unavailable - LLM returned partial response",
         "talking_points": "Talking points unavailable - LLM returned partial response",
+        "solution_outline": [],
     }
 
     result = {**defaults, **data}
@@ -123,13 +124,14 @@ Description: {intent.raw_input}
 {context}
 
 ## Output Format
-Return a JSON object with exactly these 6 fields:
+Return a JSON object with exactly these 7 fields:
 1. "scenario_assessment": Assessment of the scenario including urgency level (urgent/high/medium/low)
 2. "sensitivity_alerts": List of at least 3 sensitivity points and at least 2 landmines
 3. "matched_cases": List of relevant case study IDs
 4. "follow_up_questions": List of 8-12 questions covering environment/time/asset/budget dimensions
 5. "solution_direction": Recommended solution direction and products
 6. "talking_points": Key talking points including opening, empathy, and anchoring statements
+7. "solution_outline": List of 4-8 actionable solution steps. Each step should be a concrete, presentable item such as: phased implementation plan (Phase 1/2/3), key deliverables per phase, deployment architecture summary, estimated timeline, or pricing framework. This is what the sales person brings to the table — not just "what to say" but "what to propose".
 
 Respond ONLY with valid JSON. No markdown, no explanation."""
 

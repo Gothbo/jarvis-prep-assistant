@@ -1,4 +1,5 @@
 """JARVIS AI 售前助手 - FastAPI 后端"""
+import os
 import sys
 from pathlib import Path
 
@@ -29,10 +30,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS - 允许前端访问
+# CORS - 从环境变量读取允许的域名，开发环境默认允许 localhost
+_CORS_ORIGINS = os.environ.get(
+    "CORS_ORIGINS",
+    "http://localhost:3000,http://localhost:8501,http://127.0.0.1:3000",
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[origin.strip() for origin in _CORS_ORIGINS],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

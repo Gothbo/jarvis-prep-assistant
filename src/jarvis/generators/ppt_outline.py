@@ -6,13 +6,14 @@ from jarvis.models.prep_package import PrepPackage
 def generate_outline(pkg: PrepPackage) -> str:
     """Generate a PPT-ready Markdown outline from a Prep package.
 
-    Returns a 6-page structured Markdown document:
+    Returns a 7-page structured Markdown document:
     1. Cover
     2. Industry Landscape
     3. Problem Diagnosis
-    4. Solution
-    5. Case Reference
-    6. Next Steps
+    4. Solution Direction
+    5. Solution Outline (phased plan)
+    6. Case Reference
+    7. Next Steps
     """
     sections = []
 
@@ -38,12 +39,19 @@ def generate_outline(pkg: PrepPackage) -> str:
         sections.append(f"- {alert}")
     sections.append("")
 
-    # Page 4: Solution
+    # Page 4: Solution Direction
     sections.append("## Solution Direction\n")
     sections.append(pkg.solution_direction)
     sections.append("")
 
-    # Page 5: Case Reference
+    # Page 5: Solution Outline
+    if pkg.solution_outline:
+        sections.append("## Solution Outline\n")
+        for idx, step in enumerate(pkg.solution_outline, 1):
+            sections.append(f"{idx}. {step}")
+        sections.append("")
+
+    # Page 6: Case Reference
     sections.append("## Case References\n")
     if pkg.matched_cases:
         for case_id in pkg.matched_cases:
@@ -57,7 +65,7 @@ def generate_outline(pkg: PrepPackage) -> str:
         sections.append(f"- {q}")
     sections.append("")
 
-    # Page 6: Next Steps
+    # Page 7: Next Steps
     sections.append("## Talking Points & Next Steps\n")
     sections.append(pkg.talking_points)
     sections.append("")

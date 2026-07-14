@@ -10,31 +10,11 @@ import os
 import warnings
 from pathlib import Path
 
+from jarvis.paths import get_project_root
+
 logger = logging.getLogger(__name__)
 
 _LOADED = False
-
-
-def _find_project_root() -> Path:
-    """Locate the project root (the directory containing ``pyproject.toml``)."""
-    # Relative to this source file: src/jarvis/config.py -> root is 3 levels up
-    source_root = Path(__file__).resolve().parent.parent.parent
-    if (source_root / "pyproject.toml").exists():
-        return source_root
-
-    # Relative to cwd
-    cwd = Path.cwd()
-    if (cwd / "pyproject.toml").exists():
-        return cwd
-
-    # Walk up from __file__
-    current = Path(__file__).resolve().parent
-    for _ in range(10):
-        if (current / "pyproject.toml").exists():
-            return current
-        current = current.parent
-
-    return source_root
 
 
 def _load_dotenv_fallback(path: Path) -> None:
@@ -72,7 +52,7 @@ def load_config() -> None:
         return
     _LOADED = True
 
-    root = _find_project_root()
+    root = get_project_root()
     env_path = root / ".env"
 
     try:

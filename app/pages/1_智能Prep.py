@@ -26,8 +26,7 @@ load_config()
 # ---------------------------------------------------------------------------
 try:
     from jarvis.engine.intent import recognize
-    from jarvis.engine.llm_engine import LLMUnavailableError, generate_prep
-    from jarvis.engine.rule_engine import generate_prep_fallback
+    from jarvis.engine.hybrid_engine import generate_prep_hybrid
     from jarvis.generators.ppt_outline import generate_outline
     from jarvis.intelligence.threat_feed import fetch_threats
     from jarvis.knowledge.loader import load_all
@@ -256,7 +255,6 @@ if generate_clicked:
     else:
         # Use st.status for step-by-step progress
         with st.status("正在生成 Prep 包…", expanded=True) as status:
-            fallback_used = False
 
             # Step 1: Intent recognition
             st.write(
@@ -284,17 +282,20 @@ if generate_clicked:
             except Exception:
                 pass
 
-            # Step 3: Generate Prep package
+            # Step 3: Generate Prep package (hybrid: rule + LLM in parallel)
             st.write(
-                f"{icon('rocket', size=14, color='var(--jarvis-primary)')} 生成 Prep 包…"
+                f"{icon('rocket', size=14, color='var(--jarvis-primary)')} 双引擎并行生成…"
             )
             try:
-                pkg = generate_prep(intent, kb)
-                st.write("    LLM 生成完成")
-            except LLMUnavailableError as e:
-                st.warning(f"    已切换为基础模式（{e}）")
-                pkg = generate_prep_fallback(intent, kb)
-                fallback_used = True
+                pkg, engine_mode = generate_prep_hybrid(intent, kb, llm_timeout=30.0)
+                if engine_mode == "hybrid":
+                    st.write("    规则引擎 + LLM 融合完成")
+                else:
+                    st.warning("    LLM 不可用，已使用规则引擎生成结果")
+            except Exception as e:
+                status.update(label="生成失败", state="error")
+                st.error(f"生成出错：{e}")
+                st.stop()
 
             # Step 4: Threat intel
             st.write(
@@ -310,11 +311,13 @@ if generate_clicked:
 
             # Save to session
             st.session_state["pkg"] = pkg
-            st.session_state["fallback_used"] = fallback_used
+            st.session_state["engine_mode"] = engine_mode
 
             label = "Prep 包已生成"
-            if fallback_used:
-                label += "（基础模式）"
+            if engine_mode == "hybrid":
+                label += "（双引擎融合）"
+            else:
+                label += "（规则引擎）"
             status.update(label=label, state="complete")
 
 # ---------------------------------------------------------------------------
@@ -323,7 +326,7 @@ if generate_clicked:
 pkg = st.session_state.get("pkg")
 
 if pkg is not None:
-    fallback_used = st.session_state.get("fallback_used", False)
+    engine_mode = st.session_state.get("engine_mode", "rule_only")
 
     # Export toolbar (top-right)
     toolbar_col1, toolbar_col2, toolbar_col3 = st.columns([6, 1, 1])
@@ -351,10 +354,14 @@ if pkg is not None:
                 use_container_width=True,
             )
 
-    # Fallback warning
-    if fallback_used:
+    # Engine mode badge
+    if engine_mode == "hybrid":
+        st.success(
+            f" {badge('双引擎融合', 'success')}  规则引擎 + LLM 联合生成，结果已融合优化。"
+        )
+    else:
         st.warning(
-            f" {badge('基础模式', 'warning')}  LLM 不可用，已使用规则引擎生成结果。"
+            f" {badge('规则引擎', 'warning')}  LLM 不可用，已使用规则引擎生成结果。"
         )
 
     st.markdown("---")
@@ -378,6 +385,26 @@ if pkg is not None:
         result_section("核心准备", "target", core_content),
         unsafe_allow_html=True,
     )
+
+    # ── Section 1b: Solution Outline (expanded) ────────────────────────
+    if pkg.solution_outline:
+        outline_items = ""
+        for idx, step in enumerate(pkg.solution_outline, 1):
+            outline_items += (
+                f'<div style="display:flex;gap:12px;align-items:flex-start;'
+                f'margin-bottom:12px;padding:10px 14px;'
+                f'background:var(--jarvis-bg);border-radius:8px;'
+                f'border-left:3px solid var(--jarvis-primary);">'
+                f'<span style="font-size:13px;font-weight:700;color:var(--jarvis-primary);'
+                f'min-width:20px;padding-top:1px;">{idx}</span>'
+                f'<span style="font-size:14px;line-height:1.6;color:var(--jarvis-text);">{step}</span>'
+                f"</div>"
+            )
+        outline_content = f'<div style="padding:4px 0;">{outline_items}</div>'
+        st.markdown(
+            result_section("方案框架", "presentation", outline_content),
+            unsafe_allow_html=True,
+        )
 
     # ── Section 2: Reference Materials (collapsed by default) ──────────
     with st.expander(

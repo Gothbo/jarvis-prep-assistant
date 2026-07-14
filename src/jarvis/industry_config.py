@@ -53,29 +53,18 @@ _FALLBACK_PERSONALITIES: dict[str, str] = {
 
 # ---- Path resolution -------------------------------------------------------
 
+from jarvis.paths import get_project_root
+
+
 def _find_config_path() -> Path:
-    """Locate ``config/industries.yaml``."""
-    # Strategy 1: relative to this source file (src/jarvis/industry_config.py)
-    source_root = Path(__file__).resolve().parent.parent.parent
-    candidate = source_root / "config" / "industries.yaml"
+    """Locate ``config/industries.yaml`` using the centralized project root resolver."""
+    root = get_project_root()
+    candidate = root / "config" / "industries.yaml"
     if candidate.exists():
         return candidate
 
-    # Strategy 2: relative to cwd
-    cwd_candidate = Path.cwd() / "config" / "industries.yaml"
-    if cwd_candidate.exists():
-        return cwd_candidate
-
-    # Strategy 3: walk up from __file__
-    current = Path(__file__).resolve().parent
-    for _ in range(10):
-        candidate = current / "config" / "industries.yaml"
-        if candidate.exists():
-            return candidate
-        current = current.parent
-
-    # Return the source-root path even if missing (will log a warning)
-    return source_root / "config" / "industries.yaml"
+    # Return the root-relative path even if missing (will log a warning)
+    return candidate
 
 
 # ---- Core loader -----------------------------------------------------------
