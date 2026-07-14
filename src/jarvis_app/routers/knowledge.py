@@ -1,17 +1,9 @@
 """知识库 API — 从 YAML 真实数据加载，全部中文输出"""
 
-import sys
-from pathlib import Path
-
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
-# 确保 jarvis 模块可被找到
-SRC_DIR = Path(__file__).resolve().parent.parent.parent
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from jarvis.knowledge.loader import KnowledgeBase, load_all  # noqa: E402
+from jarvis.knowledge.loader import KnowledgeBase, load_all
 
 router = APIRouter()
 

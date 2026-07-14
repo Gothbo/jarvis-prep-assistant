@@ -1,18 +1,11 @@
 """模拟训练 API — 接入真实训练引擎，支持 DeepSeek LLM 智能回复和打分"""
 
-import sys
 import uuid
-from pathlib import Path
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
-# 确保 jarvis 模块可被找到
-SRC_DIR = Path(__file__).resolve().parent.parent.parent
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from jarvis.engine.training import (  # noqa: E402  # isort: skip
+from jarvis.engine.training import (
     PERSONALITY_MAP,
     PERSONALITY_REVERSE,
     ChatMessage,

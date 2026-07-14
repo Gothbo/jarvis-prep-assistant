@@ -3,7 +3,9 @@ import os
 import sys
 from pathlib import Path
 
-# Add src to Python path
+# Add src/ to Python path — this is the entry point for the FastAPI backend.
+# All router modules (jarvis_app/*) and core engine (jarvis/*) resolve through
+# this path. Do NOT add sys.path hacks inside individual router files.
 SRC_DIR = Path(__file__).parent / "src"
 sys.path.insert(0, str(SRC_DIR))
 

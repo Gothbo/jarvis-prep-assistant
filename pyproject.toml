@@ -55,7 +55,7 @@ ignore = ["E501"]
 "tests/**" = ["N801"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["jarvis"]
+known-first-party = ["jarvis", "jarvis_app"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,21 +1,14 @@
 """历史记录 API — 接入 SQLite 持久化，查询训练和 Prep 历史记录"""
 
 import sqlite3
-import sys
 from datetime import datetime
-from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-# 确保 jarvis 模块可被找到
-SRC_DIR = Path(__file__).resolve().parent.parent.parent
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from jarvis.paths import CACHE_DIR  # noqa: E402
-from jarvis.persistence import TrainingDB  # noqa: E402
+from jarvis.paths import CACHE_DIR
+from jarvis.persistence import TrainingDB
 
 router = APIRouter()
 

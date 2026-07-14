@@ -1,19 +1,11 @@
 """智能售前准备 API — 接入双引擎核心，生成真实 Prep 包"""
 
-import sys
-from pathlib import Path
-
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-# 确保 jarvis 模块可被找到
-SRC_DIR = Path(__file__).resolve().parent.parent.parent
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from jarvis.engine.hybrid_engine import generate_prep_hybrid  # noqa: E402
-from jarvis.engine.intent import recognize  # noqa: E402
-from jarvis.knowledge.loader import load_all  # noqa: E402
+from jarvis.engine.hybrid_engine import generate_prep_hybrid
+from jarvis.engine.intent import recognize
+from jarvis.knowledge.loader import load_all
 
 router = APIRouter()
 
