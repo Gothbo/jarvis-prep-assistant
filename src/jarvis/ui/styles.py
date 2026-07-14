@@ -284,6 +284,43 @@ div[data-testid="stTextArea"] textarea::placeholder {
 /* ── Hide Streamlit defaults ───────────────────────────────────── */
 #MainMenu, header {visibility: hidden;}
 footer {visibility: hidden;}
+
+/* ── Core Prep Labels ──────────────────────────────────────────── */
+.core-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--jarvis-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+/* ── Solution Outline Items ────────────────────────────────────── */
+.outline-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    background: var(--jarvis-background);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--jarvis-primary);
+}
+.outline-num {
+    font-size: 13px;
+    font-weight: 700;
+    font-style: normal;
+    color: var(--jarvis-primary);
+    min-width: 20px;
+    padding-top: 1px;
+}
+.outline-text {
+    font-size: 14px;
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1.6;
+    color: var(--jarvis-text);
+}
 </style>
 """
 

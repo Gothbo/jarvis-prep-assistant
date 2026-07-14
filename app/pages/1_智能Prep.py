@@ -356,55 +356,23 @@ if pkg is not None:
 
     # Engine mode badge
     if engine_mode == "hybrid":
-        st.success(
-            f" {badge('双引擎融合', 'success')}  规则引擎 + LLM 联合生成，结果已融合优化。"
-        )
+        st.success("✅ 双引擎融合 — 规则引擎 + LLM 联合生成，结果已融合优化。")
     else:
-        st.warning(
-            f" {badge('规则引擎', 'warning')}  LLM 不可用，已使用规则引擎生成结果。"
-        )
+        st.warning("⚠️ 规则引擎 — LLM 不可用，已使用规则引擎生成结果。")
 
     st.markdown("---")
 
     # ── Section 1: Core Prep (expanded) ────────────────────────────────
-    core_content = f"""
-<div style="margin-bottom:16px;">
-    <p style="font-size:13px;font-weight:600;color:var(--jarvis-text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">场景判断</p>
-    <p style="font-size:14px;line-height:1.7;color:var(--jarvis-text);">{pkg.scenario_assessment}</p>
-</div>
-<div style="margin-bottom:16px;">
-    <p style="font-size:13px;font-weight:600;color:var(--jarvis-text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">方案方向</p>
-    <p style="font-size:14px;line-height:1.7;color:var(--jarvis-text);">{pkg.solution_direction}</p>
-</div>
-<div>
-    <p style="font-size:13px;font-weight:600;color:var(--jarvis-text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">话术要点</p>
-    <p style="font-size:14px;line-height:1.7;color:var(--jarvis-text);">{pkg.talking_points}</p>
-</div>
-"""
-    st.markdown(
-        result_section("核心准备", "target", core_content),
-        unsafe_allow_html=True,
-    )
+    st.markdown(section_header("核心准备", "target"), unsafe_allow_html=True)
+    st.markdown(f"**场景判断**\n\n{pkg.scenario_assessment}")
+    st.markdown(f"**方案方向**\n\n{pkg.solution_direction}")
+    st.markdown(f"**话术要点**\n\n{pkg.talking_points}")
 
     # ── Section 1b: Solution Outline (expanded) ────────────────────────
     if pkg.solution_outline:
-        outline_items = ""
+        st.markdown(section_header("方案框架", "presentation"), unsafe_allow_html=True)
         for idx, step in enumerate(pkg.solution_outline, 1):
-            outline_items += (
-                f'<div style="display:flex;gap:12px;align-items:flex-start;'
-                f'margin-bottom:12px;padding:10px 14px;'
-                f'background:var(--jarvis-bg);border-radius:8px;'
-                f'border-left:3px solid var(--jarvis-primary);">'
-                f'<span style="font-size:13px;font-weight:700;color:var(--jarvis-primary);'
-                f'min-width:20px;padding-top:1px;">{idx}</span>'
-                f'<span style="font-size:14px;line-height:1.6;color:var(--jarvis-text);">{step}</span>'
-                f"</div>"
-            )
-        outline_content = f'<div style="padding:4px 0;">{outline_items}</div>'
-        st.markdown(
-            result_section("方案框架", "presentation", outline_content),
-            unsafe_allow_html=True,
-        )
+            st.markdown(f"**{idx}.** {step}")
 
     # ── Section 2: Reference Materials (collapsed by default) ──────────
     with st.expander(
